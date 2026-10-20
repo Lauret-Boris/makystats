@@ -15,11 +15,6 @@
 **Econometrics toolkit for Python** — ARMA–GARCH (MLE), VAR (native OLS), and VECM / Johansen cointegration.
 
 
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/Lauret-Boris/makystats/main/docs/logo_makystats.png" alt="makystats logo" width="280"/>
-</p>
-
 # makystats
 
 **Econometrics toolkit for Python** — ARMA–GARCH (MLE), VAR (native OLS), and VECM / Johansen cointegration.
