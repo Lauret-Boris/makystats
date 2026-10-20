@@ -1,3 +1,21 @@
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Lauret-Boris/makystats/main/docs/logo_makystats.png" alt="makystats logo" width="280"/>
+</p>
+
+# makystats
+
+[![PyPI version](https://img.shields.io/pypi/v/makystats)](https://pypi.org/project/makystats/)
+[![Python versions](https://img.shields.io/pypi/pyversions/makystats)](https://pypi.org/project/makystats/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub stars](https://img.shields.io/github/stars/Lauret-Boris/makystats)](https://github.com/Lauret-Boris/makystats/stargazers)
+[![GitHub last commit](https://img.shields.io/github/last-commit/Lauret-Boris/makystats)](https://github.com/Lauret-Boris/makystats/commits/main)
+[![Downloads](https://img.shields.io/pypi/dm/makystats)](https://pypi.org/project/makystats/)
+
+**Econometrics toolkit for Python** — ARMA–GARCH (MLE), VAR (native OLS), and VECM / Johansen cointegration.
+
+
+
 <p align="center">
   <img src="https://raw.githubusercontent.com/Lauret-Boris/makystats/main/docs/logo_makystats.png" alt="makystats logo" width="280"/>
 </p>
