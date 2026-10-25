@@ -1,4 +1,4 @@
-/* makystats documentation — Claude-style fixed sidebar */
+/* makystats docs — flex shell (stable top bar + left sidebar) */
 :root {
   --bg: #0f1419;
   --surface: #171c26;
@@ -13,72 +13,32 @@
   --top-h: 48px;
 }
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; height: 100%; }
-body {
+html, body {
   margin: 0;
-  min-height: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+body {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, sans-serif;
   background: var(--bg);
   color: var(--text);
   line-height: 1.6;
   font-size: 15.5px;
+  display: flex;
+  flex-direction: row;
 }
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
-/* ===== Top bar: brand + GitHub + PyPI + lang ===== */
-.topbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: var(--top-h);
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  padding: 0 1rem 0 calc(var(--sidebar-w) + 1rem);
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-}
-.topbar .brand {
-  display: none; /* brand lives in sidebar on desktop */
-}
-.topbar .ext {
-  font-size: 0.82rem;
-  font-weight: 500;
-  color: var(--text);
-  padding: 0.28rem 0.7rem;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: transparent;
-}
-.topbar .ext:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-  text-decoration: none;
-  background: var(--accent-soft);
-}
-.topbar .lang {
-  margin-left: auto;
-  font-size: 0.82rem;
-  color: var(--muted);
-}
-.topbar .lang a { color: var(--muted); }
-.topbar .lang a:hover { color: var(--accent); }
-
-/* ===== Fixed left sidebar (Claude-like) ===== */
+/* ===== Left sidebar (full height) ===== */
 .sidebar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
   width: var(--sidebar-w);
-  z-index: 110;
+  flex-shrink: 0;
+  height: 100%;
+  overflow-y: auto;
   background: var(--sidebar-bg);
   border-right: 1px solid var(--border);
   padding: 0.85rem 0.65rem 1.5rem;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
 }
@@ -91,10 +51,7 @@ a:hover { text-decoration: underline; }
   margin-bottom: 0.25rem;
   border-bottom: 1px solid var(--border);
 }
-.sidebar .side-brand:hover {
-  color: #fff;
-  text-decoration: none;
-}
+.sidebar .side-brand:hover { color: #fff; text-decoration: none; }
 .sidebar .nav-label {
   font-size: 0.68rem;
   text-transform: uppercase;
@@ -123,13 +80,56 @@ a:hover { text-decoration: underline; }
   border-left-color: var(--accent);
 }
 
-/* Main content shifted right of fixed sidebar */
-.layout {
-  margin-left: var(--sidebar-w);
-  padding-top: var(--top-h);
-  min-height: 100vh;
+/* ===== Right column: topbar + scrollable content ===== */
+.main-col {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
-.content { min-width: 0; }
+
+/* Top bar stays at top of the right column (never scrolls away) */
+.topbar {
+  flex-shrink: 0;
+  height: var(--top-h);
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0 1.25rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  z-index: 5;
+}
+.topbar .ext {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text);
+  padding: 0.28rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.topbar .ext:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  text-decoration: none;
+  background: var(--accent-soft);
+}
+.topbar .lang {
+  margin-left: auto;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+.topbar .lang a { color: var(--muted); }
+.topbar .lang a:hover { color: var(--accent); }
+
+/* Scrollable page body */
+.scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
 .wrap {
   max-width: 860px;
   margin: 0 auto;
@@ -222,19 +222,18 @@ footer {
   font-size: 0.85rem;
 }
 
-/* ===== Mobile: collapse sidebar ===== */
+/* Mobile */
 @media (max-width: 768px) {
+  body { flex-direction: column; overflow: auto; height: auto; min-height: 100%; }
   .sidebar {
-    position: relative;
     width: 100%;
     height: auto;
-    border-right: none;
-    border-bottom: 1px solid var(--border);
     flex-direction: row;
     flex-wrap: wrap;
     align-items: center;
-    padding: 0.5rem 0.6rem 0.65rem;
-    z-index: 1;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding: 0.5rem 0.6rem;
   }
   .sidebar .side-brand {
     width: 100%;
@@ -252,20 +251,10 @@ footer {
   }
   .sidebar a.nav-item.active {
     border-bottom: 2px solid var(--accent);
-    border-radius: 6px;
   }
-  .topbar {
-    position: relative;
-    padding: 0 0.85rem;
-    left: 0;
-  }
-  .topbar .brand {
-    display: none;
-  }
-  .layout {
-    margin-left: 0;
-    padding-top: 0;
-  }
+  .main-col { height: auto; overflow: visible; }
+  .topbar { position: sticky; top: 0; }
+  .scroll { overflow: visible; }
   .hero h1 { font-size: 1.45rem; }
   .wrap { padding: 1.1rem 1rem 2.5rem; }
 }
