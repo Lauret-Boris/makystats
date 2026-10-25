@@ -4,19 +4,30 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Accueil · makystats</title>
-  <meta name="description" content="makystats — boîte à outils économétrique Python : ARMA, ARMA-GARCH, VAR, VECM, ARDL."/>
+  <meta name="description" content="makystats — boîte à outils économétrique Python."/>
   <link rel="stylesheet" href="../css/style.css"/>
 </head>
 <body>
-<header>
-  <nav class="nav">
-    <a class="brand" href="index.html">makystats</a>
-    <a class="active" href="index.html">Accueil</a> <a class="" href="install.html">Installation</a> <a class="" href="arma.html">ARMA</a> <a class="" href="armagarch.html">ARMA-GARCH</a> <a class="" href="var.html">VAR</a> <a class="" href="vecm.html">VECM</a> <a class="" href="ardl.html">ARDL</a> <a class="" href="examples.html">Exemples</a>
-    <span class="lang">FR · <a href="../index.html">EN</a></span>
-  </nav>
+<header class="topbar">
+  <a class="brand" href="index.html">makystats</a>
+  <a class="ext" href="https://github.com/Lauret-Boris/makystats" rel="noopener">GitHub</a>
+  <a class="ext" href="https://pypi.org/project/makystats/" rel="noopener">PyPI</a>
+  <span class="lang">FR · <a href="../index.html">EN</a></span>
 </header>
-<main class="wrap">
-
+<div class="layout">
+  <aside class="sidebar">
+    <div class="nav-label">Documentation</div>
+      <a class="active" href="index.html">Accueil</a>
+      <a class="" href="install.html">Installation</a>
+      <a class="" href="arma.html">ARMA</a>
+      <a class="" href="armagarch.html">ARMA-GARCH</a>
+      <a class="" href="var.html">VAR</a>
+      <a class="" href="vecm.html">VECM</a>
+      <a class="" href="ardl.html">ARDL</a>
+      <a class="" href="examples.html">Exemples</a>
+  </aside>
+  <div class="content">
+    <main class="wrap">
 <section class="hero">
   <img src="https://raw.githubusercontent.com/Lauret-Boris/makystats/main/docs/logo_makystats.png" alt="logo makystats" width="220"/>
   <h1>makystats</h1>
@@ -52,14 +63,15 @@ pip install "makystats[plot]"</code></pre>
   Les images de formules restent dans le dossier <code>docs/</code> du dépôt
   (qui n’est <strong>pas</strong> la racine GitHub Pages).
 </div>
-
-<footer>
+  <footer>
   <p>makystats v0.1.2 · Licence MIT ·
     <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
     <a href="https://pypi.org/project/makystats/">PyPI</a> ·
     Auteur : ANDRIANITOVIANA Lauret Boris</p>
   <p class="muted">Site de documentation uniquement — le code source est dans le dépôt et sur PyPI, pas sur ces pages.</p>
 </footer>
-</main>
+    </main>
+  </div>
+</div>
 </body>
 </html>

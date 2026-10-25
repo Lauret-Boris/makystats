@@ -4,19 +4,30 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>ARMA-GARCH · makystats</title>
-  <meta name="description" content="makystats documentation"/>
+  <meta name="description" content="makystats — Python econometrics toolkit."/>
   <link rel="stylesheet" href="css/style.css"/>
 </head>
 <body>
-<header>
-  <nav class="nav">
-    <a class="brand" href="index.html">makystats</a>
-    <a class="" href="index.html">Home</a> <a class="" href="install.html">Install</a> <a class="" href="arma.html">ARMA</a> <a class="active" href="armagarch.html">ARMA-GARCH</a> <a class="" href="var.html">VAR</a> <a class="" href="vecm.html">VECM</a> <a class="" href="ardl.html">ARDL</a> <a class="" href="examples.html">Examples</a>
-    <span class="lang"><a href="fr/armagarch.html">FR</a> · EN</span>
-  </nav>
+<header class="topbar">
+  <a class="brand" href="index.html">makystats</a>
+  <a class="ext" href="https://github.com/Lauret-Boris/makystats" rel="noopener">GitHub</a>
+  <a class="ext" href="https://pypi.org/project/makystats/" rel="noopener">PyPI</a>
+  <span class="lang"><a href="fr/armagarch.html">FR</a> · EN</span>
 </header>
-<main class="wrap">
-
+<div class="layout">
+  <aside class="sidebar">
+    <div class="nav-label">Documentation</div>
+      <a class="" href="index.html">Home</a>
+      <a class="" href="install.html">Install</a>
+      <a class="" href="arma.html">ARMA</a>
+      <a class="active" href="armagarch.html">ARMA-GARCH</a>
+      <a class="" href="var.html">VAR</a>
+      <a class="" href="vecm.html">VECM</a>
+      <a class="" href="ardl.html">ARDL</a>
+      <a class="" href="examples.html">Examples</a>
+  </aside>
+  <div class="content">
+    <main class="wrap">
 <h1>ARMA–GARCH</h1>
 <p>Joint MLE of a linear mean (ARMA / ARX / HAR / …) and conditional variance
 (GARCH, GJR, EGARCH, APARCH, FIGARCH) under normal, Student-t, skew-t or GED innovations.</p>
@@ -87,14 +98,15 @@ res.results_frame(include_x=True, index=dates)
   Deep technical material (likelihood, burn-in, backcast, optimisation):
   <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/armagarch/DOCUMENTATION.md">DOCUMENTATION.md</a>.
 </div>
-
-<footer>
+  <footer>
   <p>makystats v0.1.2 · MIT License ·
     <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
     <a href="https://pypi.org/project/makystats/">PyPI</a> ·
     Author: ANDRIANITOVIANA Lauret Boris</p>
   <p class="muted">Documentation site only — source code lives in the repository and on PyPI, not on these pages.</p>
 </footer>
-</main>
+    </main>
+  </div>
+</div>
 </body>
 </html>
