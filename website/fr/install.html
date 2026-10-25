@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Installation · makystats</title>
+  <meta name="description" content="makystats — boîte à outils économétrique Python : ARMA, ARMA-GARCH, VAR, VECM, ARDL."/>
+  <link rel="stylesheet" href="../css/style.css"/>
+</head>
+<body>
+<header>
+  <nav class="nav">
+    <a class="brand" href="index.html">makystats</a>
+    <a class="" href="index.html">Accueil</a> <a class="active" href="install.html">Installation</a> <a class="" href="arma.html">ARMA</a> <a class="" href="armagarch.html">ARMA-GARCH</a> <a class="" href="var.html">VAR</a> <a class="" href="vecm.html">VECM</a> <a class="" href="ardl.html">ARDL</a> <a class="" href="examples.html">Exemples</a>
+    <span class="lang">FR · <a href="../install.html">EN</a></span>
+  </nav>
+</header>
+<main class="wrap">
+
+<h1>Installation</h1>
+<h2>Depuis PyPI</h2>
+<pre><code>pip install makystats
+pip install "makystats[numba]"   # optionnel : filtre GARCH plus rapide
+pip install "makystats[plot]"    # optionnel : graphiques matplotlib
+pip install "makystats[all]"     # numba + plot</code></pre>
+
+<h2>Prérequis</h2>
+<ul>
+  <li>Python ≥ 3.9 (testé jusqu’à 3.14)</li>
+  <li>numpy, pandas, scipy, statsmodels</li>
+</ul>
+
+<h2>Vérification</h2>
+<pre><code>python -c "import makystats; print(makystats.__version__)"</code></pre>
+
+<h2>Depuis les sources</h2>
+<pre><code>git clone https://github.com/Lauret-Boris/makystats.git
+cd makystats
+pip install -e ".[numba,plot,test]"</code></pre>
+
+<div class="note">Version documentée sur ce site : <strong>0.1.2</strong>.</div>
+
+<footer>
+  <p>makystats v0.1.2 · Licence MIT ·
+    <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
+    <a href="https://pypi.org/project/makystats/">PyPI</a> ·
+    Auteur : ANDRIANITOVIANA Lauret Boris</p>
+  <p class="muted">Site de documentation uniquement — le code source est dans le dépôt et sur PyPI, pas sur ces pages.</p>
+</footer>
+</main>
+</body>
+</html>

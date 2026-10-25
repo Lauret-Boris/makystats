@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>VECM · makystats</title>
+  <meta name="description" content="makystats — Python econometrics toolkit: ARMA, ARMA-GARCH, VAR, VECM, ARDL."/>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+<header>
+  <nav class="nav">
+    <a class="brand" href="index.html">makystats</a>
+    <a class="" href="index.html">Home</a> <a class="" href="install.html">Install</a> <a class="" href="arma.html">ARMA</a> <a class="" href="armagarch.html">ARMA-GARCH</a> <a class="" href="var.html">VAR</a> <a class="active" href="vecm.html">VECM</a> <a class="" href="ardl.html">ARDL</a> <a class="" href="examples.html">Examples</a>
+    <span class="lang"><a href="fr/vecm.html">FR</a> · EN</span>
+  </nav>
+</header>
+<main class="wrap">
+
+<h1>VECM / Johansen</h1>
+<p>Vector error-correction models with Johansen cointegration testing.
+Rank selection can use MHM p-values or critical values.</p>
+
+<pre><code>from makystats import vecm, select_coint_rank, summarize_johansen
+
+# Rank via MHM p-values
+rank = select_coint_rank(data, k_ar_diff=1, test_case="3")
+
+# Estimate VECM (det_case uses the package coding, not statsmodels names)
+res = vecm(data, k_ar_diff=1, coint_rank=1, det_case="3a").fit()
+print(res.summary())
+
+# Critical-value summary
+print(summarize_johansen(data, k_ar_diff=1, test_case="3"))
+</code></pre>
+
+<h2>Deterministic cases</h2>
+<table>
+  <tr><th>API</th><th>Role</th></tr>
+  <tr><td><code>test_case</code> <code>"1"</code>…<code>"5"</code></td><td>Johansen test / <code>select_coint_rank</code></td></tr>
+  <tr><td><code>det_case</code> <code>"1"</code>, <code>"2"</code>, <code>"3a"</code>, <code>"3b"</code>, <code>"4a"</code>, <code>"4b"</code>, <code>"5a"</code>, <code>"5b"</code></td><td>VECM specification</td></tr>
+</table>
+<p class="muted">There is no <code>det_order</code> / <code>deterministic</code> argument in the statsmodels sense — use <code>det_case</code>.</p>
+
+<ul>
+  <li>Forecasts and optional confidence intervals</li>
+  <li>Diagnostics, IRF and FEVD where available</li>
+</ul>
+
+<p class="muted">Guides: <code>makystats/vecm/README.md</code>, <code>DOCUMENTATION.md</code>.</p>
+
+<footer>
+  <p>makystats v0.1.2 · MIT License ·
+    <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
+    <a href="https://pypi.org/project/makystats/">PyPI</a> ·
+    Author: ANDRIANITOVIANA Lauret Boris</p>
+  <p class="muted">Documentation site only — source code lives in the repository and on PyPI, not on these pages.</p>
+</footer>
+</main>
+</body>
+</html>

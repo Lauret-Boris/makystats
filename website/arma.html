@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>ARMA · makystats</title>
+  <meta name="description" content="makystats — Python econometrics toolkit: ARMA, ARMA-GARCH, VAR, VECM, ARDL."/>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+<header>
+  <nav class="nav">
+    <a class="brand" href="index.html">makystats</a>
+    <a class="" href="index.html">Home</a> <a class="" href="install.html">Install</a> <a class="active" href="arma.html">ARMA</a> <a class="" href="armagarch.html">ARMA-GARCH</a> <a class="" href="var.html">VAR</a> <a class="" href="vecm.html">VECM</a> <a class="" href="ardl.html">ARDL</a> <a class="" href="examples.html">Examples</a>
+    <span class="lang"><a href="fr/arma.html">FR</a> · EN</span>
+  </nav>
+</header>
+<main class="wrap">
+
+<h1>ARMA / ARIMA / SARIMA</h1>
+<p>Homoskedastic mean models (constant variance). Same mean-API spirit as <code>arma_garch</code>, without GARCH dynamics.</p>
+
+<h2>Quick start</h2>
+<pre><code>from makystats import arma, arima, sarima, select_arma_order
+
+# ARIMA(1,1,1) with constant
+res = arma(y, mean="ARMA", ar=1, ma=1, d=1, trend="c").fit()
+print(res.summary())
+
+# Sparse / “gapped” ARMA
+res = arma(y, mean="ARMA", ar=[4], ma=1, d=1, trend="c").fit()
+
+# SARIMA with additive seasonal lags
+res = arma(y, mean="ARMA", ar=0, ma=1, d=1,
+           seasonal_order=(1, 1, 1, 12), trend="c").fit()
+
+# Order selection (optional seasonal_order)
+tab = select_arma_order(y, max_ar=3, max_ma=3, d=1, trend="c", ic="bic")
+</code></pre>
+
+<h2>Main parameters</h2>
+<table>
+  <tr><th>Parameter</th><th>Description</th></tr>
+  <tr><td><code>mean</code></td><td><code>"AR"</code>, <code>"ARMA"</code>, <code>"ARX"</code>, <code>"HAR"</code>, …</td></tr>
+  <tr><td><code>ar</code>, <code>ma</code></td><td>Integer order or list of lags (sparse ARMA)</td></tr>
+  <tr><td><code>d</code></td><td>Non-seasonal difference order</td></tr>
+  <tr><td><code>seasonal_order</code></td><td><code>(P, D, Q, s)</code> additive seasonal pattern</td></tr>
+  <tr><td><code>trend</code></td><td><code>"n"</code> / <code>"c"</code> / <code>"t"</code> / <code>"ct"</code></td></tr>
+</table>
+
+<h2>Results (statsmodels-style)</h2>
+<ul>
+  <li><code>params</code>, <code>bse</code>, <code>tvalues</code>, <code>pvalues</code> — named Series</li>
+  <li><code>cov_params()</code>, <code>conf_int()</code></li>
+  <li><code>arroots</code>, <code>maroots</code></li>
+  <li><code>test_serial_correlation</code>, <code>test_heteroskedasticity</code>, <code>test_normality</code></li>
+  <li><code>residuals</code>, <code>fittedvalues</code>, <code>fitted_values_level</code> — <strong>original index preserved</strong></li>
+  <li><code>forecast(steps=…)</code>, <code>aic</code> / <code>bic</code> / <code>hqic</code> / <code>llf</code></li>
+</ul>
+
+<p class="muted">Guide: <code>makystats/arma/README.md</code>.</p>
+
+<footer>
+  <p>makystats v0.1.2 · MIT License ·
+    <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
+    <a href="https://pypi.org/project/makystats/">PyPI</a> ·
+    Author: ANDRIANITOVIANA Lauret Boris</p>
+  <p class="muted">Documentation site only — source code lives in the repository and on PyPI, not on these pages.</p>
+</footer>
+</main>
+</body>
+</html>

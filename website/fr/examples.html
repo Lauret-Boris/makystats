@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Exemples · makystats</title>
+  <meta name="description" content="makystats — boîte à outils économétrique Python : ARMA, ARMA-GARCH, VAR, VECM, ARDL."/>
+  <link rel="stylesheet" href="../css/style.css"/>
+</head>
+<body>
+<header>
+  <nav class="nav">
+    <a class="brand" href="index.html">makystats</a>
+    <a class="" href="index.html">Accueil</a> <a class="" href="install.html">Installation</a> <a class="" href="arma.html">ARMA</a> <a class="" href="armagarch.html">ARMA-GARCH</a> <a class="" href="var.html">VAR</a> <a class="" href="vecm.html">VECM</a> <a class="" href="ardl.html">ARDL</a> <a class="active" href="examples.html">Exemples</a>
+    <span class="lang">FR · <a href="../examples.html">EN</a></span>
+  </nav>
+</header>
+<main class="wrap">
+
+<h1>Exemples</h1>
+<p>
+  Les exemples travaillés se trouvent dans le dépôt GitHub, dossier
+  <a href="https://github.com/Lauret-Boris/makystats/tree/main/exemples"><code>exemples/</code></a>.
+  Ils ne sont <strong>pas</strong> inclus dans le paquet PyPI et ne sont
+  <strong>pas</strong> copiés sur ce site de documentation — uniquement reliés.
+</p>
+
+<div class="note">
+  Seuls les notebooks présents sur le dépôt public sont listés ici.
+  D’autres exemples apparaîtront au fur et à mesure qu’ils seront ajoutés sous <code>exemples/</code>.
+</div>
+
+<h2>Disponible actuellement</h2>
+<table>
+  <tr><th>Thème</th><th>Notebook</th><th>Ouvrir</th></tr>
+  <tr>
+    <td>VECM / Johansen<br/><span class="muted">Données Canada · réplication style JSS</span></td>
+    <td><code>exemples/VECM/</code></td>
+    <td>
+      <a href="https://github.com/Lauret-Boris/makystats/tree/main/exemples/VECM">Dossier</a> ·
+      <a href="https://github.com/Lauret-Boris/makystats/blob/main/exemples/VECM/Canada_VECM_JSS_Replication%20.ipynb">GitHub</a> ·
+      <a href="https://nbviewer.org/github/Lauret-Boris/makystats/blob/main/exemples/VECM/Canada_VECM_JSS_Replication%20.ipynb">nbviewer</a> ·
+      <a href="https://colab.research.google.com/github/Lauret-Boris/makystats/blob/main/exemples/VECM/Canada_VECM_JSS_Replication%20.ipynb">Colab</a>
+    </td>
+  </tr>
+</table>
+
+<h2>Exécution en local</h2>
+<pre><code>git clone https://github.com/Lauret-Boris/makystats.git
+cd makystats
+pip install -e ".[plot]"
+jupyter notebook exemples/VECM/
+</code></pre>
+
+<p class="muted">
+  Prérequis habituels : <code>makystats</code>, <code>pandas</code>, <code>matplotlib</code>,
+  et les fichiers de données fournis sous <code>exemples/VECM/data/</code>.
+</p>
+
+<footer>
+  <p>makystats v0.1.2 · Licence MIT ·
+    <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
+    <a href="https://pypi.org/project/makystats/">PyPI</a> ·
+    Auteur : ANDRIANITOVIANA Lauret Boris</p>
+  <p class="muted">Site de documentation uniquement — le code source est dans le dépôt et sur PyPI, pas sur ces pages.</p>
+</footer>
+</main>
+</body>
+</html>

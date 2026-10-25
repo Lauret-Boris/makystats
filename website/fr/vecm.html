@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>VECM · makystats</title>
+  <meta name="description" content="makystats — boîte à outils économétrique Python : ARMA, ARMA-GARCH, VAR, VECM, ARDL."/>
+  <link rel="stylesheet" href="../css/style.css"/>
+</head>
+<body>
+<header>
+  <nav class="nav">
+    <a class="brand" href="index.html">makystats</a>
+    <a class="" href="index.html">Accueil</a> <a class="" href="install.html">Installation</a> <a class="" href="arma.html">ARMA</a> <a class="" href="armagarch.html">ARMA-GARCH</a> <a class="" href="var.html">VAR</a> <a class="active" href="vecm.html">VECM</a> <a class="" href="ardl.html">ARDL</a> <a class="" href="examples.html">Exemples</a>
+    <span class="lang">FR · <a href="../vecm.html">EN</a></span>
+  </nav>
+</header>
+<main class="wrap">
+
+<h1>VECM / Johansen</h1>
+<p>Modèles à correction d’erreur vectorielle avec test de cointégration de Johansen.
+La sélection du rang peut utiliser les p-values MHM ou les valeurs critiques.</p>
+
+<pre><code>from makystats import vecm, select_coint_rank, summarize_johansen
+
+rank = select_coint_rank(data, k_ar_diff=1, test_case="3")
+res = vecm(data, k_ar_diff=1, coint_rank=1, det_case="3a").fit()
+print(res.summary())
+print(summarize_johansen(data, k_ar_diff=1, test_case="3"))
+</code></pre>
+
+<h2>Cas déterministes</h2>
+<table>
+  <tr><th>API</th><th>Rôle</th></tr>
+  <tr><td><code>test_case</code> <code>"1"</code>…<code>"5"</code></td><td>Test de Johansen / <code>select_coint_rank</code></td></tr>
+  <tr><td><code>det_case</code> <code>"1"</code>, <code>"2"</code>, <code>"3a"</code>, <code>"3b"</code>, <code>"4a"</code>, <code>"4b"</code>, <code>"5a"</code>, <code>"5b"</code></td><td>Spécification du VECM</td></tr>
+</table>
+<p class="muted">Pas d’arguments <code>det_order</code> / <code>deterministic</code> à la statsmodels — utiliser <code>det_case</code>.</p>
+
+<ul>
+  <li>Prévisions et intervalles de confiance optionnels</li>
+  <li>Diagnostics, IRF et FEVD selon disponibilité</li>
+</ul>
+
+<p class="muted">Guides : <code>makystats/vecm/README.md</code>, <code>DOCUMENTATION.md</code>.</p>
+
+<footer>
+  <p>makystats v0.1.2 · Licence MIT ·
+    <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
+    <a href="https://pypi.org/project/makystats/">PyPI</a> ·
+    Auteur : ANDRIANITOVIANA Lauret Boris</p>
+  <p class="muted">Site de documentation uniquement — le code source est dans le dépôt et sur PyPI, pas sur ces pages.</p>
+</footer>
+</main>
+</body>
+</html>

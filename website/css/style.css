@@ -1,0 +1,124 @@
+/* makystats documentation site */
+:root {
+  --bg: #0f1419;
+  --surface: #1a2332;
+  --text: #e7ecf3;
+  --muted: #8b9bb4;
+  --accent: #3d9cf0;
+  --accent-soft: rgba(61, 156, 240, 0.12);
+  --border: #2a3548;
+  --code-bg: #0b1017;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  font-size: 16px;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem 1rem;
+  padding: 0.85rem 1.25rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.nav .brand {
+  font-weight: 700;
+  color: var(--text);
+  margin-right: 0.5rem;
+}
+.nav a.active { color: #fff; font-weight: 600; border-bottom: 2px solid var(--accent); }
+.lang { margin-left: auto; font-size: 0.85rem; color: var(--muted); }
+.wrap { max-width: 860px; margin: 0 auto; padding: 1.5rem 1.25rem 3rem; }
+.hero { text-align: center; padding: 1.5rem 0 0.5rem; }
+.hero img { display: block; margin: 0 auto 1rem; }
+.hero h1 { margin: 0.25rem 0; font-size: 2rem; }
+.lead { color: var(--muted); max-width: 36rem; margin: 0.75rem auto 1rem; }
+.badges { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; }
+.badge {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.2rem 0.7rem;
+  font-size: 0.8rem;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0 1.5rem;
+}
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+}
+.card h3 { margin: 0 0 0.4rem; font-size: 1.05rem; }
+.card p { margin: 0; color: var(--muted); font-size: 0.92rem; }
+h1 { font-size: 1.75rem; margin-top: 0.5rem; }
+h2 { font-size: 1.25rem; margin-top: 1.75rem; border-bottom: 1px solid var(--border); padding-bottom: 0.35rem; }
+h3 { font-size: 1.05rem; }
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.9rem 1rem;
+  overflow-x: auto;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+code { font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace; font-size: 0.9em; }
+p code, li code, td code {
+  background: var(--code-bg);
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.75rem 0 1rem;
+  font-size: 0.92rem;
+}
+th, td {
+  border: 1px solid var(--border);
+  padding: 0.45rem 0.65rem;
+  text-align: left;
+  vertical-align: top;
+}
+th { background: var(--surface); }
+ul { padding-left: 1.25rem; }
+li { margin: 0.3rem 0; }
+.muted { color: var(--muted); font-size: 0.9rem; }
+.note {
+  background: var(--accent-soft);
+  border-left: 3px solid var(--accent);
+  padding: 0.75rem 1rem;
+  border-radius: 0 8px 8px 0;
+  margin: 1rem 0;
+  font-size: 0.92rem;
+}
+footer {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+@media (max-width: 600px) {
+  .nav { gap: 0.35rem 0.7rem; }
+  .hero h1 { font-size: 1.45rem; }
+}

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>VAR · makystats</title>
+  <meta name="description" content="makystats — boîte à outils économétrique Python : ARMA, ARMA-GARCH, VAR, VECM, ARDL."/>
+  <link rel="stylesheet" href="../css/style.css"/>
+</head>
+<body>
+<header>
+  <nav class="nav">
+    <a class="brand" href="index.html">makystats</a>
+    <a class="" href="index.html">Accueil</a> <a class="" href="install.html">Installation</a> <a class="" href="arma.html">ARMA</a> <a class="" href="armagarch.html">ARMA-GARCH</a> <a class="active" href="var.html">VAR</a> <a class="" href="vecm.html">VECM</a> <a class="" href="ardl.html">ARDL</a> <a class="" href="examples.html">Exemples</a>
+    <span class="lang">FR · <a href="../var.html">EN</a></span>
+  </nav>
+</header>
+<main class="wrap">
+
+<h1>VAR</h1>
+<p>Autorégression vectorielle par OLS, avec la panoplie habituelle d’outils post-estimation.</p>
+
+<pre><code>from makystats import var_model, select_var_order
+
+res = var_model(data, lags=2).fit()
+print(res.summary())
+
+tab = select_var_order(data, maxlags=8, ic="bic")
+irf = res.irf(periods=12)
+fevd = res.fevd(periods=12)
+</code></pre>
+
+<h2>Fonctionnalités</h2>
+<ul>
+  <li>Termes déterministes (constante / tendance) cohérents avec l’API du paquet</li>
+  <li>Réponses impulsionnelles et décomposition de la variance</li>
+  <li>Tests de causalité de Granger</li>
+  <li>Sélection d’ordres par critères d’information</li>
+</ul>
+
+<p class="muted">Guide : <code>makystats/var_model/README.md</code>.</p>
+
+<footer>
+  <p>makystats v0.1.2 · Licence MIT ·
+    <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
+    <a href="https://pypi.org/project/makystats/">PyPI</a> ·
+    Auteur : ANDRIANITOVIANA Lauret Boris</p>
+  <p class="muted">Site de documentation uniquement — le code source est dans le dépôt et sur PyPI, pas sur ces pages.</p>
+</footer>
+</main>
+</body>
+</html>

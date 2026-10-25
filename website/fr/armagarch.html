@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>ARMA-GARCH · makystats</title>
+  <meta name="description" content="makystats — boîte à outils économétrique Python : ARMA, ARMA-GARCH, VAR, VECM, ARDL."/>
+  <link rel="stylesheet" href="../css/style.css"/>
+</head>
+<body>
+<header>
+  <nav class="nav">
+    <a class="brand" href="index.html">makystats</a>
+    <a class="" href="index.html">Accueil</a> <a class="" href="install.html">Installation</a> <a class="" href="arma.html">ARMA</a> <a class="active" href="armagarch.html">ARMA-GARCH</a> <a class="" href="var.html">VAR</a> <a class="" href="vecm.html">VECM</a> <a class="" href="ardl.html">ARDL</a> <a class="" href="examples.html">Exemples</a>
+    <span class="lang">FR · <a href="../armagarch.html">EN</a></span>
+  </nav>
+</header>
+<main class="wrap">
+
+<h1>ARMA–GARCH</h1>
+<p>Estimation par maximum de vraisemblance jointe de la moyenne et de la variance conditionnelle.
+Prend en charge la saisonnalité de moyenne et les mêmes conventions de lags que <code>arma</code>.</p>
+
+<h2>Démarrage rapide</h2>
+<pre><code>from makystats import arma_garch, select_order
+
+res = arma_garch(y, mean="ARMA", ar=1, ma=1, d=0,
+                 r=1, s=1, trend="c", dist="normal").fit()
+print(res.summary())
+
+res = arma_garch(y, mean="ARMA", ar=0, ma=1, d=1,
+                 seasonal_order=(1, 1, 1, 12),
+                 r=1, s=1, trend="c").fit()
+
+tab = select_order(y, max_ar=2, max_ma=2, max_r=1, max_s=1,
+                   d=0, trend="c", ic="bic")
+</code></pre>
+
+<h2>Modèles de variance</h2>
+<table>
+  <tr><th>vol</th><th>Modèle</th></tr>
+  <tr><td><code>GARCH</code></td><td>GARCH(r,s) standard</td></tr>
+  <tr><td><code>GJR</code> / <code>TARCH</code></td><td>Asymétrique (effet de levier)</td></tr>
+  <tr><td><code>EGARCH</code></td><td>GARCH exponentiel</td></tr>
+  <tr><td><code>APARCH</code></td><td>Asymmetric power ARCH</td></tr>
+  <tr><td><code>FIGARCH</code></td><td>Fractionnairement intégré</td></tr>
+</table>
+
+<h2>Innovations</h2>
+<p><code>dist</code> : <code>normal</code>, <code>studentst</code>, <code>ged</code>, <code>skewt</code> (selon disponibilité).</p>
+
+<h2>Après estimation</h2>
+<ul>
+  <li>Résidus, volatilité conditionnelle et moyenne ajustée alignés sur l’index</li>
+  <li>Prévisions de moyenne et de variance</li>
+  <li>Value-at-Risk et Expected Shortfall</li>
+  <li><code>select_order</code> accepte <code>seasonal_order</code></li>
+</ul>
+
+<p class="muted">Guides : <code>makystats/armagarch/README.md</code>, <code>DOCUMENTATION.md</code>.</p>
+
+<footer>
+  <p>makystats v0.1.2 · Licence MIT ·
+    <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
+    <a href="https://pypi.org/project/makystats/">PyPI</a> ·
+    Auteur : ANDRIANITOVIANA Lauret Boris</p>
+  <p class="muted">Site de documentation uniquement — le code source est dans le dépôt et sur PyPI, pas sur ces pages.</p>
+</footer>
+</main>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Accueil · makystats</title>
+  <meta name="description" content="makystats — boîte à outils économétrique Python : ARMA, ARMA-GARCH, VAR, VECM, ARDL."/>
+  <link rel="stylesheet" href="../css/style.css"/>
+</head>
+<body>
+<header>
+  <nav class="nav">
+    <a class="brand" href="index.html">makystats</a>
+    <a class="active" href="index.html">Accueil</a> <a class="" href="install.html">Installation</a> <a class="" href="arma.html">ARMA</a> <a class="" href="armagarch.html">ARMA-GARCH</a> <a class="" href="var.html">VAR</a> <a class="" href="vecm.html">VECM</a> <a class="" href="ardl.html">ARDL</a> <a class="" href="examples.html">Exemples</a>
+    <span class="lang">FR · <a href="../index.html">EN</a></span>
+  </nav>
+</header>
+<main class="wrap">
+
+<section class="hero">
+  <img src="https://raw.githubusercontent.com/Lauret-Boris/makystats/main/docs/logo_makystats.png" alt="logo makystats" width="220"/>
+  <h1>makystats</h1>
+  <p class="lead">Boîte à outils économétrique pour Python — ARMA, ARMA–GARCH (MV), VAR, VECM / Johansen et ARDL (test aux bornes, ECM).</p>
+  <div class="badges">
+    <span class="badge">v0.1.2</span>
+    <span class="badge">Python ≥ 3.9</span>
+    <span class="badge">MIT</span>
+    <span class="badge">pip install makystats</span>
+  </div>
+</section>
+
+<h2>Modules</h2>
+<div class="grid">
+  <div class="card"><h3><a href="arma.html">ARMA</a></h3><p>AR / ARMA / ARIMA / SARIMA homoscédastiques. Sélection d’ordres, diagnostics, prévisions en niveau avec conservation de l’index.</p></div>
+  <div class="card"><h3><a href="armagarch.html">ARMA–GARCH</a></h3><p>MV jointe : moyenne + GARCH / GJR / EGARCH / APARCH / FIGARCH. VaR, ES, saisonnalité.</p></div>
+  <div class="card"><h3><a href="var.html">VAR</a></h3><p>VAR OLS natif, IRF, FEVD, causalité de Granger, sélection d’ordres.</p></div>
+  <div class="card"><h3><a href="vecm.html">VECM</a></h3><p>Cointégration de Johansen, p-values MHM, huit cas déterministes, prévisions.</p></div>
+  <div class="card"><h3><a href="ardl.html">ARDL</a></h3><p>Test aux bornes, UECM, ECM restreint, coefficients de long terme, CUSUM.</p></div>
+</div>
+
+<h2>Installation</h2>
+<pre><code>pip install makystats
+pip install "makystats[numba]"
+pip install "makystats[plot]"</code></pre>
+<p>Voir la page <a href="install.html">Installation</a>.</p>
+
+<div class="note">
+  Les guides techniques complets sont livrés dans le paquet et sur GitHub
+  (<code>makystats/*/README.md</code>, <code>DOCUMENTATION.md</code>).
+  Ce site est une vue d’ensemble orientée utilisateur.
+  Les formules et logos restent dans le dossier <code>docs/</code> du dépôt
+  (qui n’est <strong>pas</strong> la racine GitHub Pages).
+</div>
+
+<footer>
+  <p>makystats v0.1.2 · Licence MIT ·
+    <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
+    <a href="https://pypi.org/project/makystats/">PyPI</a> ·
+    Auteur : ANDRIANITOVIANA Lauret Boris</p>
+  <p class="muted">Site de documentation uniquement — le code source est dans le dépôt et sur PyPI, pas sur ces pages.</p>
+</footer>
+</main>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>VAR · makystats</title>
+  <meta name="description" content="makystats — Python econometrics toolkit: ARMA, ARMA-GARCH, VAR, VECM, ARDL."/>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+<header>
+  <nav class="nav">
+    <a class="brand" href="index.html">makystats</a>
+    <a class="" href="index.html">Home</a> <a class="" href="install.html">Install</a> <a class="" href="arma.html">ARMA</a> <a class="" href="armagarch.html">ARMA-GARCH</a> <a class="active" href="var.html">VAR</a> <a class="" href="vecm.html">VECM</a> <a class="" href="ardl.html">ARDL</a> <a class="" href="examples.html">Examples</a>
+    <span class="lang"><a href="fr/var.html">FR</a> · EN</span>
+  </nav>
+</header>
+<main class="wrap">
+
+<h1>VAR</h1>
+<p>Native ordinary-least-squares vector autoregression with the usual post-estimation toolkit.</p>
+
+<pre><code>from makystats import var_model, select_var_order
+
+res = var_model(data, lags=2).fit()
+print(res.summary())
+
+# Order selection
+tab = select_var_order(data, maxlags=8, ic="bic")
+
+# IRF / FEVD / Granger
+irf = res.irf(periods=12)
+fevd = res.fevd(periods=12)
+</code></pre>
+
+<h2>Features</h2>
+<ul>
+  <li>Deterministic terms (constant / trend) consistent with the package API</li>
+  <li>Impulse responses and forecast-error variance decomposition</li>
+  <li>Granger causality tests</li>
+  <li>Lag-order selection via information criteria</li>
+</ul>
+
+<p class="muted">Guide: <code>makystats/var_model/README.md</code>.</p>
+
+<footer>
+  <p>makystats v0.1.2 · MIT License ·
+    <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
+    <a href="https://pypi.org/project/makystats/">PyPI</a> ·
+    Author: ANDRIANITOVIANA Lauret Boris</p>
+  <p class="muted">Documentation site only — source code lives in the repository and on PyPI, not on these pages.</p>
+</footer>
+</main>
+</body>
+</html>
