@@ -4,7 +4,7 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>VECM · makystats</title>
-  <meta name="description" content="makystats — boîte à outils économétrique Python : ARMA, ARMA-GARCH, VAR, VECM, ARDL."/>
+  <meta name="description" content="makystats documentation"/>
   <link rel="stylesheet" href="../css/style.css"/>
 </head>
 <body>
@@ -18,31 +18,52 @@
 <main class="wrap">
 
 <h1>VECM / Johansen</h1>
-<p>Modèles à correction d’erreur vectorielle avec test de cointégration de Johansen.
-La sélection du rang peut utiliser les p-values MHM ou les valeurs critiques.</p>
+<p>Modèles vectoriels à correction d’erreur et tests de rang de Johansen.</p>
+<ul>
+  <li>Régression reduced-rank (Johansen / Lütkepohl)</li>
+  <li>Huit spécifications déterministes, dont les variantes <strong>JHJ</strong></li>
+  <li>P-values et valeurs critiques MacKinnon–Haug–Michelis (1999)</li>
+  <li>IRF, FEVD, Granger, JB, whiteness, diagnostics et prévisions natifs</li>
+</ul>
+<p class="muted">
+  README : <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/vecm/README.md"><code>makystats/vecm/README.md</code></a> ·
+  Guide technique : <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/vecm/DOCUMENTATION.md"><code>DOCUMENTATION.md</code></a>
+</p>
 
-<pre><code>from makystats import vecm, select_coint_rank, summarize_johansen
+<h2>Paramètres (API makystats — pas statsmodels)</h2>
+<table>
+  <tr><th>Paramètre</th><th>Valeurs</th><th>Rôle</th></tr>
+  <tr><td><code>test_case</code></td><td><code>'1'</code>…<code>'5'</code></td><td>Spécification du <strong>test de rang</strong></td></tr>
+  <tr><td><code>det_case</code></td><td><code>'1'</code>…<code>'5b'</code></td><td>Spécification de l’<strong>estimation</strong> (défaut <code>'3a'</code>)</td></tr>
+  <tr><td><code>k_ar_diff</code></td><td>int ≥ 0</td><td>Retards en différences (= ordre VAR en niveau − 1)</td></tr>
+  <tr><td><code>coint_rank</code></td><td>int</td><td>Rang de cointégration r</td></tr>
+</table>
+<p><code>3a</code>/<code>4a</code>/<code>5a</code> = termes duals <strong>JHJ</strong> ; <code>3b</code>/<code>4b</code>/<code>5b</code> = contreparties classiques.</p>
 
-rank = select_coint_rank(data, k_ar_diff=1, test_case="3")
-res = vecm(data, k_ar_diff=1, coint_rank=1, det_case="3a").fit()
-print(res.summary())
-print(summarize_johansen(data, k_ar_diff=1, test_case="3"))
+<h2>Workflow minimal</h2>
+<pre><code>order = select_var_order(data, maxlags=4, criterion="bic")
+k_ar_diff = order.best - 1
+summarize_johansen(data, k_ar_diff=k_ar_diff, signif=0.05)
+rank = select_coint_rank(data, k_ar_diff=k_ar_diff, test_case="3")
+model = VECM(data, k_ar_diff=k_ar_diff, coint_rank=max(rank.rank, 1),
+             det_case="3a").fit()
+model.summary()
+print(model.forecast(steps=5, conf_int=True, method="bootstrap", sim_reps=1000))
+model.irf(10).plot()
+model.plot_diagnostics()
 </code></pre>
 
-<h2>Cas déterministes</h2>
+<h2>Rang : p-values vs valeurs critiques</h2>
 <table>
-  <tr><th>API</th><th>Rôle</th></tr>
-  <tr><td><code>test_case</code> <code>"1"</code>…<code>"5"</code></td><td>Test de Johansen / <code>select_coint_rank</code></td></tr>
-  <tr><td><code>det_case</code> <code>"1"</code>, <code>"2"</code>, <code>"3a"</code>, <code>"3b"</code>, <code>"4a"</code>, <code>"4b"</code>, <code>"5a"</code>, <code>"5b"</code></td><td>Spécification du VECM</td></tr>
+  <tr><th>Fonction</th><th>Règle</th></tr>
+  <tr><td><code>select_coint_rank</code></td><td>P-values <strong>MHM</strong> continues</td></tr>
+  <tr><td><code>summarize_johansen</code></td><td>Valeurs critiques <strong>MHM</strong> tabulées</td></tr>
 </table>
-<p class="muted">Pas d’arguments <code>det_order</code> / <code>deterministic</code> à la statsmodels — utiliser <code>det_case</code>.</p>
 
-<ul>
-  <li>Prévisions et intervalles de confiance optionnels</li>
-  <li>Diagnostics, IRF et FEVD selon disponibilité</li>
-</ul>
-
-<p class="muted">Guides : <code>makystats/vecm/README.md</code>, <code>DOCUMENTATION.md</code>.</p>
+<div class="note">
+  Tables MHM incluses dans le paquet. Formules et JHJ :
+  <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/vecm/DOCUMENTATION.md">DOCUMENTATION.md</a>.
+</div>
 
 <footer>
   <p>makystats v0.1.2 · Licence MIT ·

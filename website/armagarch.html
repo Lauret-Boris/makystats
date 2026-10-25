@@ -4,7 +4,7 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>ARMA-GARCH · makystats</title>
-  <meta name="description" content="makystats — Python econometrics toolkit: ARMA, ARMA-GARCH, VAR, VECM, ARDL."/>
+  <meta name="description" content="makystats documentation"/>
   <link rel="stylesheet" href="css/style.css"/>
 </head>
 <body>
@@ -18,48 +18,75 @@
 <main class="wrap">
 
 <h1>ARMA–GARCH</h1>
-<p>Joint maximum-likelihood estimation of the mean and conditional variance.
-Supports seasonal mean terms and the same lag conventions as <code>arma</code>.</p>
+<p>Joint MLE of a linear mean (ARMA / ARX / HAR / …) and conditional variance
+(GARCH, GJR, EGARCH, APARCH, FIGARCH) under normal, Student-t, skew-t or GED innovations.</p>
+<p class="muted">
+  README: <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/armagarch/README.md"><code>makystats/armagarch/README.md</code></a> ·
+  Full technical guide: <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/armagarch/DOCUMENTATION.md"><code>DOCUMENTATION.md</code></a>
+</p>
 
 <h2>Quick start</h2>
 <pre><code>from makystats import arma_garch, select_order
 
-res = arma_garch(y, mean="ARMA", ar=1, ma=1, d=0,
-                 r=1, s=1, trend="c", dist="normal").fit()
-print(res.summary())
+res = arma_garch(y, mean="AR", ar=1, ma=1, vol="GARCH", dist="normal", trend="c").fit()
+print(res.coef_table)
+print(res.loglik, res.aic, res.bic)
+print(res.forecast(h=5))
+fig = res.plot_diagnostics(lags=20)
 
-# With seasonal mean
-res = arma_garch(y, mean="ARMA", ar=0, ma=1, d=1,
-                 seasonal_order=(1, 1, 1, 12),
-                 r=1, s=1, trend="c").fit()
-
-# Information criteria grid
-tab = select_order(y, max_ar=2, max_ma=2, max_r=1, max_s=1,
-                   d=0, trend="c", ic="bic")
+# d and seasonality fixed on the whole IC grid
+tab = select_order(
+    ylog, p_range=range(0, 3), q_range=range(0, 2),
+    r_range=[1], s_range=[1], d=1,
+    seasonal_order=(0, 1, 1, 12), criterion="aic",
+)
+tab, best = select_order(..., return_best=True)
 </code></pre>
 
-<h2>Variance models</h2>
+<h2>API sketch</h2>
 <table>
-  <tr><th>vol</th><th>Model</th></tr>
-  <tr><td><code>GARCH</code></td><td>Standard GARCH(r,s)</td></tr>
-  <tr><td><code>GJR</code> / <code>TARCH</code></td><td>Asymmetric (leverage)</td></tr>
-  <tr><td><code>EGARCH</code></td><td>Exponential GARCH</td></tr>
-  <tr><td><code>APARCH</code></td><td>Asymmetric power ARCH</td></tr>
-  <tr><td><code>FIGARCH</code></td><td>Fractionally integrated</td></tr>
+  <tr><th>Argument</th><th>Role</th></tr>
+  <tr><td><code>mean</code></td><td><code>Constant</code>, <code>Zero</code>, <code>AR</code>, <code>ARX</code>, <code>ARMAX</code>, <code>HAR</code>, <code>HARX</code>, <code>LS</code></td></tr>
+  <tr><td><code>in_mean</code></td><td><code>None</code> / <code>sigma</code> / <code>var</code> / <code>log</code> — GARCH-M (coef <code>archm</code>)</td></tr>
+  <tr><td><code>trend</code></td><td><code>n</code> / <code>c</code> / <code>t</code> / <code>ct</code></td></tr>
+  <tr><td><code>vol</code></td><td><code>GARCH</code>, <code>ARCH</code>, <code>GJR</code>/<code>TARCH</code>, <code>EGARCH</code>, <code>APARCH</code>, <code>FIGARCH</code></td></tr>
+  <tr><td><code>dist</code></td><td><code>normal</code>, <code>t</code>, <code>skewt</code>, <code>ged</code></td></tr>
+  <tr><td><code>ar</code> / <code>ma</code></td><td>Orders or lag lists (sparse ARMA)</td></tr>
+  <tr><td><code>r</code> / <code>s</code></td><td>ARCH / GARCH orders (<code>r=s=0</code> → constant variance)</td></tr>
+  <tr><td><code>d</code></td><td>Regular differences 0, 1 or 2</td></tr>
+  <tr><td><code>seasonal_order</code></td><td><code>(P, D, Q, s)</code> additive seasonal mean</td></tr>
 </table>
 
-<h2>Innovations</h2>
-<p><code>dist</code>: <code>normal</code>, <code>studentst</code>, <code>ged</code>, <code>skewt</code> (where implemented).</p>
+<h2>GARCH-M</h2>
+<pre><code>res = arma_garch(y, mean="AR", ar=1, ma=1, vol="GARCH", in_mean="var").fit()
+# in_mean: None | "sigma" | "var" | "log"  → coefficient archm (λ)
+</code></pre>
 
-<h2>Post-estimation</h2>
+<h2>Value-at-Risk / Expected Shortfall</h2>
+<pre><code>res.var(alpha=0.05, h=1, method="parametric")
+res.var(alpha=0.05, h=10, aggregation="cumulative", n_sims=10000, seed=1)
+res.expected_shortfall(alpha=0.05)
+df = res.var_series(alpha=0.05)
+res.var_backtest(alpha=0.05)
+res.plot_var(alphas=(0.05, 0.01), method="parametric")
+</code></pre>
 <ul>
-  <li>Index-aligned <code>residuals</code>, conditional volatility, fitted mean</li>
-  <li>Forecasts of mean and variance</li>
-  <li>Value-at-Risk and Expected Shortfall helpers</li>
-  <li><code>select_order</code> supports <code>seasonal_order</code> for comparable IC grids</li>
+  <li>Forecast VaR/ES: <code>aggregation="marginal"</code> (default) or <code>"cumulative"</code> (MC)</li>
+  <li>In-sample 1-step: <code>var_series</code>, <code>var_backtest</code>, <code>plot_var</code></li>
 </ul>
 
-<p class="muted">Guides: <code>makystats/armagarch/README.md</code>, <code>DOCUMENTATION.md</code>.</p>
+<h2>Fitted series</h2>
+<pre><code>res.fitted_values
+res.residuals
+res.results_frame(include_x=True, index=dates)
+# Identity: y = fitted_values + residuals
+</code></pre>
+
+<div class="note">
+  Unconstrained BFGS on a reparameterised space; OPG standard errors by default.
+  Deep technical material (likelihood, burn-in, backcast, optimisation):
+  <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/armagarch/DOCUMENTATION.md">DOCUMENTATION.md</a>.
+</div>
 
 <footer>
   <p>makystats v0.1.2 · MIT License ·

@@ -4,7 +4,7 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>ARMA · makystats</title>
-  <meta name="description" content="makystats — boîte à outils économétrique Python : ARMA, ARMA-GARCH, VAR, VECM, ARDL."/>
+  <meta name="description" content="makystats — boîte à outils économétrique Python."/>
   <link rel="stylesheet" href="../css/style.css"/>
 </head>
 <body>
@@ -18,47 +18,92 @@
 <main class="wrap">
 
 <h1>ARMA / ARIMA / SARIMA</h1>
-<p>Modèles de moyenne homoscédastiques (variance constante). Même esprit d’API que <code>arma_garch</code>, sans dynamique GARCH.</p>
+<p>Estimation MLE d’un <strong>ARMA</strong>, <strong>ARIMA</strong> ou <strong>SARIMA</strong> <em>sans</em> GARCH :
+un seul paramètre de variance <code>σ²</code>.</p>
+<p>L’<strong>index</strong> temporel de <code>y</code> (DatetimeIndex, PeriodIndex, …) est préservé
+sur résidus, fitted values et prévisions. Si <code>d</code> ou <code>D</code> &gt; 0, des NaN
+apparaissent en tête (alignement sur l’échantillon complet).</p>
+<p class="muted">README source :
+  <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/arma/README.md"><code>makystats/arma/README.md</code></a>
+</p>
 
-<h2>Démarrage rapide</h2>
+<h2>Import</h2>
 <pre><code>from makystats import arma, arima, sarima, select_arma_order
-
-# ARIMA(1,1,1) avec constante
-res = arma(y, mean="ARMA", ar=1, ma=1, d=1, trend="c").fit()
-print(res.summary())
-
-# ARMA « troué » (lags sparses)
-res = arma(y, mean="ARMA", ar=[4], ma=1, d=1, trend="c").fit()
-
-# SARIMA (saisonnalité additive)
-res = arma(y, mean="ARMA", ar=0, ma=1, d=1,
-           seasonal_order=(1, 1, 1, 12), trend="c").fit()
-
-# Sélection d’ordres
-tab = select_arma_order(y, max_ar=3, max_ma=3, d=1, trend="c", ic="bic")
 </code></pre>
 
-<h2>Paramètres principaux</h2>
+<h2>ARMA (stationnaire, <code>d=0</code>)</h2>
+<pre><code>res = arma(y, mean="ARMA", ar=1, ma=1, trend="c").fit()
+print(res.coef_table)
+print(res.params["AR(1)"])
+print(res.bse, res.pvalues)
+print(res.cov_params())
+print(res.forecast(steps=5, conf_int=True))
+</code></pre>
+
+<h2>ARIMA (niveaux, souvent I(1))</h2>
+<p>L’utilisateur <strong>n’a pas</strong> à différencier à la main :</p>
+<pre><code>res = arma(prices, mean="ARMA", ar=1, ma=1, d=1, trend="c").fit()
+res = arima(prices, order=(1, 1, 1), trend="c").fit()
+res.forecast(steps=10)                # niveaux (défaut si d&gt;0)
+res.forecast(steps=10, levels=False)  # sur Δy
+res.fitted_values_level()
+</code></pre>
 <table>
-  <tr><th>Paramètre</th><th>Description</th></tr>
-  <tr><td><code>mean</code></td><td><code>"AR"</code>, <code>"ARMA"</code>, <code>"ARX"</code>, <code>"HAR"</code>, …</td></tr>
-  <tr><td><code>ar</code>, <code>ma</code></td><td>Ordre entier ou liste de lags (ARMA sparse)</td></tr>
-  <tr><td><code>d</code></td><td>Ordre de différenciation non saisonnière</td></tr>
-  <tr><td><code>seasonal_order</code></td><td><code>(P, D, Q, s)</code></td></tr>
-  <tr><td><code>trend</code></td><td><code>"n"</code> / <code>"c"</code> / <code>"t"</code> / <code>"ct"</code></td></tr>
+  <tr><th><code>d</code></th><th>Rôle</th></tr>
+  <tr><td><code>0</code></td><td>ARMA sur <code>y</code></td></tr>
+  <tr><td><code>1</code></td><td>ARIMA sur niveaux non stationnaires</td></tr>
+  <tr><td><code>2</code></td><td>Double différenciation (rare)</td></tr>
+</table>
+<p>Sur Δy, <code>trend='c'</code> = <strong>dérive</strong> en niveau.</p>
+
+<h2>SARIMA</h2>
+<pre><code>res = arma(ylog, mean="ARMA", ar=0, ma=1, d=1,
+           seasonal_order=(0, 1, 1, 12), trend="n").fit()
+res = sarima(ylog, order=(0, 1, 1), seasonal_order=(0, 1, 1, 12), trend="n").fit()
+res = arma(ylog, mean="ARMA", ar=[4], ma=1, d=1,
+           seasonal_order=(1, 1, 1, 12), trend="c").fit()
+</code></pre>
+<table>
+  <tr><th><code>seasonal_order</code></th><th><code>(P, D, Q, s)</code></th></tr>
+  <tr><td><code>P</code>, <code>Q</code></td><td>AR / MA saisonniers</td></tr>
+  <tr><td><code>D</code></td><td>différences saisonnières</td></tr>
+  <tr><td><code>s</code></td><td>période (12, 4, …)</td></tr>
 </table>
 
-<h2>Résultats (style statsmodels)</h2>
-<ul>
-  <li><code>params</code>, <code>bse</code>, <code>tvalues</code>, <code>pvalues</code> — Series nommées</li>
-  <li><code>cov_params()</code>, <code>conf_int()</code></li>
-  <li><code>arroots</code>, <code>maroots</code></li>
-  <li><code>test_serial_correlation</code>, <code>test_heteroskedasticity</code>, <code>test_normality</code></li>
-  <li><code>residuals</code>, <code>fittedvalues</code>, <code>fitted_values_level</code> — <strong>index d’origine conservé</strong></li>
-  <li><code>forecast(steps=…)</code>, critères d’information</li>
-</ul>
+<h2>Récupération des résultats</h2>
+<table>
+  <tr><th>Attribut / méthode</th><th>Contenu</th></tr>
+  <tr><td><code>params</code>, <code>coef</code>, <code>coefficients</code></td><td>Series des coefficients nommés</td></tr>
+  <tr><td><code>bse</code>, <code>se</code>, <code>pvalues</code>, <code>tvalues</code></td><td>Inférence</td></tr>
+  <tr><td><code>coef_table</code></td><td>Coeff / SE / z / Prob. / IC</td></tr>
+  <tr><td><code>cov_params()</code></td><td>Covariance k×k</td></tr>
+  <tr><td><code>conf_int(alpha=0.05)</code></td><td>IC des coefficients</td></tr>
+  <tr><td><code>aic</code>, <code>bic</code>, <code>hqic</code>, <code>llf</code></td><td>Critères</td></tr>
+  <tr><td><code>residuals</code>, <code>fitted_values</code></td><td>Séries indexées</td></tr>
+  <tr><td><code>arparams</code>, <code>maparams</code></td><td>Sous-ensembles AR/MA</td></tr>
+  <tr><td><code>arroots</code>, <code>maroots</code></td><td>Racines (|r| &gt; 1 souhaité)</td></tr>
+  <tr><td><code>sigma2</code></td><td>Variance innovatrice</td></tr>
+</table>
 
-<p class="muted">Guide : <code>makystats/arma/README.md</code>.</p>
+<h2>Diagnostics</h2>
+<pre><code>res.test_serial_correlation(lags=10)
+res.test_heteroskedasticity(lags=5)
+res.test_normality()
+res.plot_diagnostics()
+</code></pre>
+
+<h2>Sélection d’ordres</h2>
+<pre><code>tab = select_arma_order(y, p_range=range(0, 4), q_range=range(0, 3), criterion="bic")
+tab = select_arma_order(prices, d=1, p_range=range(0, 3), q_range=range(0, 2))
+tab = select_arma_order(ylog, d=1, seasonal_order=(0, 1, 1, 12),
+                        p_range=range(0, 3), q_range=range(0, 2), criterion="aic")
+</code></pre>
+<p><code>d</code> et <code>seasonal_order</code> sont <strong>fixes</strong> pour toute la grille ; seuls <code>p</code> et <code>q</code> varient.</p>
+
+<div class="note">
+  IC de prévision en niveau pour <code>d&gt;0</code> : approximation indicative.
+  SARIMA dense → SARIMAX multiplicatif ; ARMA « troué » + saison → lags saisonniers <strong>additifs</strong>.
+</div>
 
 <footer>
   <p>makystats v0.1.2 · Licence MIT ·

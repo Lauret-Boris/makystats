@@ -4,7 +4,7 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>VAR · makystats</title>
-  <meta name="description" content="makystats — Python econometrics toolkit: ARMA, ARMA-GARCH, VAR, VECM, ARDL."/>
+  <meta name="description" content="makystats documentation"/>
   <link rel="stylesheet" href="css/style.css"/>
 </head>
 <body>
@@ -18,30 +18,119 @@
 <main class="wrap">
 
 <h1>VAR</h1>
-<p>Native ordinary-least-squares vector autoregression with the usual post-estimation toolkit.</p>
+<p>Vector autoregression in <strong>levels</strong>, <strong>native OLS</strong> estimation
+(coefficients, ICs, IRF, FEVD, Granger, JB, whiteness, graphical diagnostics).</p>
+<p class="muted">Source README:
+  <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/var_model/README.md"><code>makystats/var_model/README.md</code></a>
+</p>
 
-<pre><code>from makystats import var_model, select_var_order
-
-res = var_model(data, lags=2).fit()
-print(res.summary())
-
-# Order selection
-tab = select_var_order(data, maxlags=8, ic="bic")
-
-# IRF / FEVD / Granger
-irf = res.irf(periods=12)
-fevd = res.fevd(periods=12)
+<h2>Import</h2>
+<pre><code>from makystats import VAR, select_var_order
 </code></pre>
 
-<h2>Features</h2>
-<ul>
-  <li>Deterministic terms (constant / trend) consistent with the package API</li>
-  <li>Impulse responses and forecast-error variance decomposition</li>
-  <li>Granger causality tests</li>
-  <li>Lag-order selection via information criteria</li>
-</ul>
+<h2>Deterministic terms</h2>
+<table>
+  <tr><th><code>det</code></th><th>Content</th></tr>
+  <tr><td><code>n</code></td><td>None</td></tr>
+  <tr><td><code>c</code></td><td>Constant (default)</td></tr>
+  <tr><td><code>t</code></td><td>Linear trend only</td></tr>
+  <tr><td><code>ct</code></td><td>Constant + trend</td></tr>
+  <tr><td><code>ctt</code></td><td>Constant + trend + quadratic</td></tr>
+</table>
 
-<p class="muted">Guide: <code>makystats/var_model/README.md</code>.</p>
+<h2>Example</h2>
+<pre><code>from makystats import VAR
+
+res = VAR(df[["DTS", "FMG"]], k_ar=1, det="c").fit()
+print(res.summary())
+print(res.aic, res.bic)                 # system ICs (−2ℓ/T)
+print(res.fittedvalues.head())          # DataFrame, estimation index
+print(res.resid.head())
+print(res.forecast(5))                  # all variables
+print(res.forecast(5, variables="DTS"))
+print(res.forecast(5, conf_int=True, variables=["DTS", "FMG"]))
+print(res.irf(10).to_wide()["DTS"])
+print(res.fevd(10).to_wide()["DTS"])
+print(res.test_causality("DTS", "FMG"))
+print(res.test_normality())
+print(res.test_whiteness(nlags=2))
+res.plot_diagnostics(lags=12)
+</code></pre>
+
+<h2>Order selection</h2>
+<pre><code>order = select_var_order(data, maxlags=4, det="c", criterion="bic")
+print(order.table)       # sorted by criterion (best on top), index = k_ar
+print(order.best)        # p* for criterion
+print(order.selected)    # {'aic': …, 'bic': …, 'hqic': …}
+
+order = select_var_order(data, maxlags=4, return_best=True, criterion="aic")
+order.best_model.summary()
+order.best_model.forecast(3, variables="DTS")
+</code></pre>
+<p>Options aligned with <code>select_order</code> (ARMA-GARCH): <code>criterion</code>, <code>return_best</code>,
+<code>verbose</code>, <code>common_sample</code> (comparable ICs on the same T−maxlags sample).</p>
+
+<h3>Bridge to VECM</h3>
+<pre><code>from makystats import select_coint_rank, VECM
+
+p = order.best
+k_ar_diff = p - 1
+rank = select_coint_rank(data, k_ar_diff=k_ar_diff, test_case="3")
+if rank.rank &gt;= 1:
+    model = VECM(data, k_ar_diff=k_ar_diff, coint_rank=rank.rank, det_case="3a").fit()
+else:
+    res = VAR(data, k_ar=p, det="c").fit()
+</code></pre>
+
+<h2>API <code>VARResults</code></h2>
+<table>
+  <tr><th>Method / property</th><th>Role</th></tr>
+  <tr><td><code>summary()</code></td><td>Header + per-equation tables + diagnostics + system ICs</td></tr>
+  <tr><td><code>params</code> / <code>stderr</code> / <code>tvalues</code> / <code>pvalues</code></td><td>Coefficients</td></tr>
+  <tr><td><code>fittedvalues</code> / <code>resid</code></td><td>DataFrames, <strong>estimation index</strong> (<code>data.index[k_ar:]</code>)</td></tr>
+  <tr><td><code>coef_table()</code> / <code>equation_stats()</code></td><td>Per-equation coeffs and diagnostics</td></tr>
+  <tr><td><code>forecast(steps, conf_int=…, variables=…)</code></td><td>Forecast; default = all variables</td></tr>
+  <tr><td><code>irf(periods)</code></td><td><code>.to_frame()</code>, <code>.to_wide()</code>, <code>.plot()</code></td></tr>
+  <tr><td><code>fevd(periods)</code></td><td><code>.to_frame()</code>, <code>.to_wide()</code>, <code>.plot()</code></td></tr>
+  <tr><td><code>test_causality(caused, causing)</code></td><td>Granger (F)</td></tr>
+  <tr><td><code>test_normality()</code></td><td>Multivariate Jarque–Bera</td></tr>
+  <tr><td><code>test_whiteness(nlags)</code></td><td>Multivariate portmanteau</td></tr>
+  <tr><td><code>plot_diagnostics(lags=…, equations=…)</code></td><td>One row per equation</td></tr>
+</table>
+
+<h2><code>forecast</code> and variable filter</h2>
+<pre><code>res.forecast(5)
+res.forecast(5, variables="DTS")
+res.forecast(5, variables=["FMG", "DTS"])   # order preserved
+out = res.forecast(5, conf_int=True, variables="DTS")
+# out["mean"], out["lower"], out["upper"]
+</code></pre>
+<p>Forecast remains a <strong>multivariate system</strong> internally; only the exposed result is filtered.</p>
+
+<h2>IRF and FEVD</h2>
+<pre><code>irf = res.irf(10)
+irf.to_frame()          # long: horizon, response, impulse, value
+irf.to_wide()["DTS"]
+irf.plot()
+
+fevd = res.fevd(10)
+fevd.to_wide()["DTS"]   # shares (rows sum to 1)
+fevd.plot()
+</code></pre>
+<p><strong>Reading FEVD.</strong> For equation <code>DTS</code> at horizon 5, <code>shock[FMG] = 0.38</code>
+means about 38% of DTS forecast-error variance at 5 steps is attributable to
+FMG shocks (Cholesky order = column order).</p>
+
+<h2>Residual diagnostics</h2>
+<pre><code>res.plot_diagnostics(lags=12)
+res.plot_diagnostics(equations=["DTS"], lags=8)
+</code></pre>
+<p>One row per equation: standardised residuals, histogram + N(0,1)/KDE, Q-Q,
+ACF, ACF of squares. Residual correlation heatmap at the bottom.</p>
+
+<h2>System ICs (−2ℓ/T)</h2>
+<p>AIC = −2ℓ/T + 2k/T · BIC = −2ℓ/T + k log(T)/T<br/>
+(<code>summary()</code> also reports the log|Σ̂| scale.)</p>
 
 <footer>
   <p>makystats v0.1.2 · MIT License ·

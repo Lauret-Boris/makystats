@@ -4,7 +4,7 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>ARMA-GARCH · makystats</title>
-  <meta name="description" content="makystats — boîte à outils économétrique Python : ARMA, ARMA-GARCH, VAR, VECM, ARDL."/>
+  <meta name="description" content="makystats documentation"/>
   <link rel="stylesheet" href="../css/style.css"/>
 </head>
 <body>
@@ -18,46 +18,49 @@
 <main class="wrap">
 
 <h1>ARMA–GARCH</h1>
-<p>Estimation par maximum de vraisemblance jointe de la moyenne et de la variance conditionnelle.
-Prend en charge la saisonnalité de moyenne et les mêmes conventions de lags que <code>arma</code>.</p>
+<p>Maximum de vraisemblance jointe d’une moyenne linéaire (ARMA / ARX / HAR / …)
+et d’une variance conditionnelle (GARCH, GJR, EGARCH, APARCH, FIGARCH)
+sous innovations normale, Student-t, skew-t ou GED.</p>
+<p class="muted">
+  README : <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/armagarch/README.md"><code>makystats/armagarch/README.md</code></a> ·
+  Guide technique : <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/armagarch/DOCUMENTATION.md"><code>DOCUMENTATION.md</code></a>
+</p>
 
 <h2>Démarrage rapide</h2>
 <pre><code>from makystats import arma_garch, select_order
-
-res = arma_garch(y, mean="ARMA", ar=1, ma=1, d=0,
-                 r=1, s=1, trend="c", dist="normal").fit()
-print(res.summary())
-
-res = arma_garch(y, mean="ARMA", ar=0, ma=1, d=1,
-                 seasonal_order=(1, 1, 1, 12),
-                 r=1, s=1, trend="c").fit()
-
-tab = select_order(y, max_ar=2, max_ma=2, max_r=1, max_s=1,
-                   d=0, trend="c", ic="bic")
+res = arma_garch(y, mean="AR", ar=1, ma=1, vol="GARCH", trend="c").fit()
+print(res.coef_table)
+print(res.forecast(h=5))
+res.plot_diagnostics(lags=20)
+tab = select_order(ylog, p_range=range(0, 3), q_range=range(0, 2),
+                   r_range=[1], s_range=[1], d=1,
+                   seasonal_order=(0, 1, 1, 12), criterion="aic")
 </code></pre>
 
-<h2>Modèles de variance</h2>
+<h2>API en bref</h2>
 <table>
-  <tr><th>vol</th><th>Modèle</th></tr>
-  <tr><td><code>GARCH</code></td><td>GARCH(r,s) standard</td></tr>
-  <tr><td><code>GJR</code> / <code>TARCH</code></td><td>Asymétrique (effet de levier)</td></tr>
-  <tr><td><code>EGARCH</code></td><td>GARCH exponentiel</td></tr>
-  <tr><td><code>APARCH</code></td><td>Asymmetric power ARCH</td></tr>
-  <tr><td><code>FIGARCH</code></td><td>Fractionnairement intégré</td></tr>
+  <tr><th>Argument</th><th>Rôle</th></tr>
+  <tr><td><code>mean</code></td><td><code>Constant</code>, <code>Zero</code>, <code>AR</code>, <code>ARX</code>, <code>ARMAX</code>, <code>HAR</code>, <code>LS</code>, …</td></tr>
+  <tr><td><code>in_mean</code></td><td>GARCH-M : <code>sigma</code> / <code>var</code> / <code>log</code> (coef <code>archm</code>)</td></tr>
+  <tr><td><code>trend</code></td><td><code>n</code> / <code>c</code> / <code>t</code> / <code>ct</code></td></tr>
+  <tr><td><code>vol</code></td><td><code>GARCH</code>, <code>GJR</code>, <code>EGARCH</code>, <code>APARCH</code>, <code>FIGARCH</code>, …</td></tr>
+  <tr><td><code>dist</code></td><td><code>normal</code>, <code>t</code>, <code>skewt</code>, <code>ged</code></td></tr>
+  <tr><td><code>ar</code> / <code>ma</code></td><td>Ordres ou listes de lags</td></tr>
+  <tr><td><code>d</code>, <code>seasonal_order</code></td><td>Différences et saisonnalité de moyenne</td></tr>
 </table>
 
-<h2>Innovations</h2>
-<p><code>dist</code> : <code>normal</code>, <code>studentst</code>, <code>ged</code>, <code>skewt</code> (selon disponibilité).</p>
+<h2>VaR / ES</h2>
+<pre><code>res.var(alpha=0.05, h=1)
+res.expected_shortfall(alpha=0.05)
+res.var_series(alpha=0.05)
+res.var_backtest(alpha=0.05)
+res.plot_var(alphas=(0.05, 0.01))
+</code></pre>
 
-<h2>Après estimation</h2>
-<ul>
-  <li>Résidus, volatilité conditionnelle et moyenne ajustée alignés sur l’index</li>
-  <li>Prévisions de moyenne et de variance</li>
-  <li>Value-at-Risk et Expected Shortfall</li>
-  <li><code>select_order</code> accepte <code>seasonal_order</code></li>
-</ul>
-
-<p class="muted">Guides : <code>makystats/armagarch/README.md</code>, <code>DOCUMENTATION.md</code>.</p>
+<div class="note">
+  BFGS non contraint + reparamétrisation ; écarts-types OPG par défaut.
+  Détail technique : <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/armagarch/DOCUMENTATION.md">DOCUMENTATION.md</a>.
+</div>
 
 <footer>
   <p>makystats v0.1.2 · Licence MIT ·

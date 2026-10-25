@@ -4,7 +4,7 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>VECM · makystats</title>
-  <meta name="description" content="makystats — Python econometrics toolkit: ARMA, ARMA-GARCH, VAR, VECM, ARDL."/>
+  <meta name="description" content="makystats documentation"/>
   <link rel="stylesheet" href="css/style.css"/>
 </head>
 <body>
@@ -18,36 +18,100 @@
 <main class="wrap">
 
 <h1>VECM / Johansen</h1>
-<p>Vector error-correction models with Johansen cointegration testing.
-Rank selection can use MHM p-values or critical values.</p>
+<p>Vector error-correction models and Johansen rank tests.</p>
+<ul>
+  <li>Reduced-rank regression (Johansen / Lütkepohl)</li>
+  <li>Eight deterministic specifications, including <strong>JHJ</strong> variants</li>
+  <li>MacKinnon–Haug–Michelis (1999) p-values and critical values</li>
+  <li>Native IRF, FEVD, Granger, JB, whiteness, diagnostics and forecasts</li>
+</ul>
+<p class="muted">
+  README: <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/vecm/README.md"><code>makystats/vecm/README.md</code></a> ·
+  Full technical guide: <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/vecm/DOCUMENTATION.md"><code>DOCUMENTATION.md</code></a>
+</p>
 
-<pre><code>from makystats import vecm, select_coint_rank, summarize_johansen
+<h2>Parameters (makystats API — not statsmodels names)</h2>
+<table>
+  <tr><th>Parameter</th><th>Values</th><th>Role</th></tr>
+  <tr><td><code>test_case</code></td><td><code>'1'</code>…<code>'5'</code></td><td>Deterministic specification of the <strong>rank test</strong></td></tr>
+  <tr><td><code>det_case</code></td><td><code>'1'</code>, <code>'2'</code>, <code>'3a'</code>, <code>'3b'</code>, <code>'4a'</code>, <code>'4b'</code>, <code>'5a'</code>, <code>'5b'</code></td><td>VECM <strong>estimation</strong> (default <code>'3a'</code>)</td></tr>
+  <tr><td><code>k_ar_diff</code></td><td>int (≥ 0)</td><td>Lags in differences (= levels VAR order − 1)</td></tr>
+  <tr><td><code>coint_rank</code></td><td>int</td><td>Cointegration rank r</td></tr>
+</table>
 
-# Rank via MHM p-values
-rank = select_coint_rank(data, k_ar_diff=1, test_case="3")
+<table>
+  <tr><th><code>test_case</code></th><th>Meaning</th></tr>
+  <tr><td><code>'1'</code></td><td>No deterministic terms</td></tr>
+  <tr><td><code>'2'</code></td><td>Restricted constant (inside cointegration)</td></tr>
+  <tr><td><code>'3'</code></td><td>Unrestricted constant</td></tr>
+  <tr><td><code>'4'</code></td><td>Unrestricted constant + restricted trend</td></tr>
+  <tr><td><code>'5'</code></td><td>Unrestricted constant and trend</td></tr>
+</table>
+<table>
+  <tr><th><code>det_case</code></th><th>Meaning</th></tr>
+  <tr><td><code>3a</code> / <code>4a</code> / <code>5a</code></td><td><strong>JHJ</strong> dual deterministic terms</td></tr>
+  <tr><td><code>3b</code> / <code>4b</code> / <code>5b</code></td><td>Classical single-term counterparts</td></tr>
+</table>
 
-# Estimate VECM (det_case uses the package coding, not statsmodels names)
-res = vecm(data, k_ar_diff=1, coint_rank=1, det_case="3a").fit()
-print(res.summary())
+<h2>Imports</h2>
+<pre><code>from makystats import VECM, select_coint_rank
 
-# Critical-value summary
-print(summarize_johansen(data, k_ar_diff=1, test_case="3"))
+from makystats.vecm import (
+    VECMModel, JohansenTest, vecm, VECM,
+    select_coint_rank, summarize_johansen,
+    information_criteria_table, mhm_pvalue, mhm_critical,
+)
+</code></pre>
+<p class="muted">At package root only <code>VECM</code> is exported (not <code>vecm</code>), so the submodule stays importable.</p>
+
+<h2>Minimal workflow</h2>
+<pre><code>from makystats import VECM, select_coint_rank, select_var_order
+from makystats.vecm import summarize_johansen, information_criteria_table
+
+# data: DataFrame or ndarray (T × n) in LEVELS
+order = select_var_order(data, maxlags=4, criterion="bic")
+k_ar_diff = order.best - 1
+
+summarize_johansen(data, k_ar_diff=k_ar_diff, signif=0.05)
+rank = select_coint_rank(data, k_ar_diff=k_ar_diff, test_case="3")
+rank.summary()
+
+model = VECM(data, k_ar_diff=k_ar_diff, coint_rank=max(rank.rank, 1),
+             det_case="3a").fit()
+model.summary()
+
+print(model.forecast(steps=5))
+print(model.forecast(steps=5, variables="DTS"))
+print(model.forecast(steps=5, conf_int=True, method="bootstrap",
+                     sim_reps=1000, variables=["DTS", "FMG"]))
+model.plot_forecast(steps=8, method="bootstrap", sim_reps=1000, variables="DTS")
+model.fitted_values(level=True)
+model.irf(10).plot()
+model.plot_diagnostics()
+information_criteria_table(data, k_ar_diff=k_ar_diff)
 </code></pre>
 
-<h2>Deterministic cases</h2>
+<h2>Rank: p-values vs critical values</h2>
 <table>
-  <tr><th>API</th><th>Role</th></tr>
-  <tr><td><code>test_case</code> <code>"1"</code>…<code>"5"</code></td><td>Johansen test / <code>select_coint_rank</code></td></tr>
-  <tr><td><code>det_case</code> <code>"1"</code>, <code>"2"</code>, <code>"3a"</code>, <code>"3b"</code>, <code>"4a"</code>, <code>"4b"</code>, <code>"5a"</code>, <code>"5b"</code></td><td>VECM specification</td></tr>
+  <tr><th>Function</th><th>Rule</th></tr>
+  <tr><td><code>select_coint_rank</code></td><td>Continuous <strong>MHM p-values</strong></td></tr>
+  <tr><td><code>summarize_johansen</code></td><td>Tabulated <strong>MHM critical values</strong></td></tr>
 </table>
-<p class="muted">There is no <code>det_order</code> / <code>deterministic</code> argument in the statsmodels sense — use <code>det_case</code>.</p>
+<p>Near the boundary the displayed ranks may differ by one unit.</p>
 
-<ul>
-  <li>Forecasts and optional confidence intervals</li>
-  <li>Diagnostics, IRF and FEVD where available</li>
-</ul>
+<h2>Forecast confidence intervals</h2>
+<p>With <code>conf_int=True</code>, parameters are held fixed (innovation uncertainty only):</p>
+<table>
+  <tr><th><code>method</code></th><th>Construction</th></tr>
+  <tr><td><code>analytic</code> (default)</td><td>Lütkepohl MSE via MA representation + normal quantiles</td></tr>
+  <tr><td><code>bootstrap</code></td><td>Resample residual rows; empirical percentiles</td></tr>
+  <tr><td><code>gaussian</code></td><td>Draws from N(0, Σ<sub>u</sub>); empirical percentiles</td></tr>
+</table>
 
-<p class="muted">Guides: <code>makystats/vecm/README.md</code>, <code>DOCUMENTATION.md</code>.</p>
+<div class="note">
+  MHM tables (<code>mhm_tables.npz</code>) ship inside the package.
+  Deeper formulas and JHJ details: <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/vecm/DOCUMENTATION.md">DOCUMENTATION.md</a>.
+</div>
 
 <footer>
   <p>makystats v0.1.2 · MIT License ·

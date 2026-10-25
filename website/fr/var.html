@@ -4,7 +4,7 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>VAR · makystats</title>
-  <meta name="description" content="makystats — boîte à outils économétrique Python : ARMA, ARMA-GARCH, VAR, VECM, ARDL."/>
+  <meta name="description" content="makystats documentation"/>
   <link rel="stylesheet" href="../css/style.css"/>
 </head>
 <body>
@@ -18,27 +18,75 @@
 <main class="wrap">
 
 <h1>VAR</h1>
-<p>Autorégression vectorielle par OLS, avec la panoplie habituelle d’outils post-estimation.</p>
+<p>Autorégression vectorielle en <strong>niveau</strong>, estimation <strong>OLS native</strong>
+(coefficients, IC, IRF, FEVD, Granger, JB, whiteness, diagnostics graphiques).</p>
+<p class="muted">README source :
+  <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/var_model/README.md"><code>makystats/var_model/README.md</code></a>
+</p>
 
-<pre><code>from makystats import var_model, select_var_order
-
-res = var_model(data, lags=2).fit()
-print(res.summary())
-
-tab = select_var_order(data, maxlags=8, ic="bic")
-irf = res.irf(periods=12)
-fevd = res.fevd(periods=12)
+<h2>Import</h2>
+<pre><code>from makystats import VAR, select_var_order
 </code></pre>
 
-<h2>Fonctionnalités</h2>
-<ul>
-  <li>Termes déterministes (constante / tendance) cohérents avec l’API du paquet</li>
-  <li>Réponses impulsionnelles et décomposition de la variance</li>
-  <li>Tests de causalité de Granger</li>
-  <li>Sélection d’ordres par critères d’information</li>
-</ul>
+<h2>Déterministes</h2>
+<table>
+  <tr><th><code>det</code></th><th>Contenu</th></tr>
+  <tr><td><code>n</code></td><td>aucun</td></tr>
+  <tr><td><code>c</code></td><td>constante (défaut)</td></tr>
+  <tr><td><code>t</code></td><td>tendance linéaire seule</td></tr>
+  <tr><td><code>ct</code></td><td>constante + tendance</td></tr>
+  <tr><td><code>ctt</code></td><td>constante + tendance + quadratique</td></tr>
+</table>
 
-<p class="muted">Guide : <code>makystats/var_model/README.md</code>.</p>
+<h2>Exemple</h2>
+<pre><code>res = VAR(df[["DTS", "FMG"]], k_ar=1, det="c").fit()
+print(res.summary())
+print(res.aic, res.bic)
+print(res.forecast(5, conf_int=True, variables=["DTS", "FMG"]))
+print(res.irf(10).to_wide()["DTS"])
+print(res.fevd(10).to_wide()["DTS"])
+print(res.test_causality("DTS", "FMG"))
+print(res.test_normality())
+print(res.test_whiteness(nlags=2))
+res.plot_diagnostics(lags=12)
+</code></pre>
+
+<h2>Sélection d’ordre</h2>
+<pre><code>order = select_var_order(data, maxlags=4, det="c", criterion="bic")
+print(order.table, order.best, order.selected)
+order = select_var_order(data, maxlags=4, return_best=True, criterion="aic")
+order.best_model.summary()
+</code></pre>
+<p>Options : <code>criterion</code>, <code>return_best</code>, <code>verbose</code>, <code>common_sample</code>.</p>
+
+<h3>Pont vers le VECM</h3>
+<pre><code>p = order.best
+k_ar_diff = p - 1
+rank = select_coint_rank(data, k_ar_diff=k_ar_diff, test_case="3")
+if rank.rank &gt;= 1:
+    model = VECM(data, k_ar_diff=k_ar_diff, coint_rank=rank.rank, det_case="3a").fit()
+else:
+    res = VAR(data, k_ar=p, det="c").fit()
+</code></pre>
+
+<h2>API <code>VARResults</code></h2>
+<table>
+  <tr><th>Méthode / propriété</th><th>Rôle</th></tr>
+  <tr><td><code>summary()</code></td><td>Tables par équation + diagnostics + IC système</td></tr>
+  <tr><td><code>params</code> / <code>stderr</code> / <code>tvalues</code> / <code>pvalues</code></td><td>Coefficients</td></tr>
+  <tr><td><code>fittedvalues</code> / <code>resid</code></td><td>DataFrames, index d’estimation</td></tr>
+  <tr><td><code>forecast(..., variables=…)</code></td><td>Prévision filtrée</td></tr>
+  <tr><td><code>irf</code> / <code>fevd</code></td><td><code>.to_wide()</code>, <code>.plot()</code></td></tr>
+  <tr><td><code>test_causality</code>, <code>test_normality</code>, <code>test_whiteness</code></td><td>Tests</td></tr>
+  <tr><td><code>plot_diagnostics</code></td><td>1 ligne / équation</td></tr>
+</table>
+
+<h2>IRF, FEVD, lecture</h2>
+<p>Pour l’équation <code>DTS</code> à l’horizon 5, <code>shock[FMG] = 0.38</code> signifie qu’environ
+38 % de l’erreur de prévision de DTS à 5 pas est attribuable aux chocs sur FMG
+(ordre de Cholesky = ordre des colonnes).</p>
+
+<p>IC système (−2ℓ/T) : AIC = −2ℓ/T + 2k/T ; BIC = −2ℓ/T + k log(T)/T.</p>
 
 <footer>
   <p>makystats v0.1.2 · Licence MIT ·
