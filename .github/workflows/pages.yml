@@ -1,0 +1,51 @@
+# Deploy website/ to GitHub Pages (gh-pages branch root).
+# Does NOT touch docs/ (formula images & logos for README.md).
+name: Deploy documentation site
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "website/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare publish directory
+        run: |
+          set -e
+          rm -rf /tmp/makystats-site
+          mkdir -p /tmp/makystats-site
+          # Copy site assets only (no Python sources; docs/ is never included)
+          cp -a website/. /tmp/makystats-site/
+          # Maintainer notes stay in the repo, not on the public site
+          rm -f /tmp/makystats-site/README.md
+          touch /tmp/makystats-site/.nojekyll
+          test -f /tmp/makystats-site/index.html
+          test -f /tmp/makystats-site/css/style.css
+          test -f /tmp/makystats-site/fr/index.html
+          # Guard: never publish package source by mistake
+          ! test -e /tmp/makystats-site/makystats
+          ! test -e /tmp/makystats-site/docs
+          find /tmp/makystats-site -name '*.py' | grep -q . && exit 1 || true
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: /tmp/makystats-site
+          publish_branch: gh-pages
+          force_orphan: true
