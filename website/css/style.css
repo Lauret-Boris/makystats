@@ -1,123 +1,142 @@
-/* makystats documentation site */
+/* makystats documentation — Claude-style fixed sidebar */
 :root {
   --bg: #0f1419;
-  --surface: #1a2332;
+  --surface: #171c26;
+  --sidebar-bg: #12161e;
   --text: #e7ecf3;
   --muted: #8b9bb4;
   --accent: #3d9cf0;
-  --accent-soft: rgba(61, 156, 240, 0.12);
+  --accent-soft: rgba(61, 156, 240, 0.14);
   --border: #2a3548;
   --code-bg: #0b1017;
-  --sidebar-w: 220px;
-  --top-h: 52px;
+  --sidebar-w: 240px;
+  --top-h: 48px;
 }
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; height: 100%; }
 body {
   margin: 0;
+  min-height: 100%;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, sans-serif;
   background: var(--bg);
   color: var(--text);
   line-height: 1.6;
-  font-size: 16px;
+  font-size: 15.5px;
 }
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
-/* Top bar: brand + GitHub + PyPI + language */
+/* ===== Top bar: brand + GitHub + PyPI + lang ===== */
 .topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--top-h);
+  z-index: 100;
   display: flex;
   align-items: center;
-  gap: 0.75rem 1.1rem;
-  padding: 0 1.25rem;
-  height: var(--top-h);
+  gap: 0.65rem;
+  padding: 0 1rem 0 calc(var(--sidebar-w) + 1rem);
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  z-index: 20;
 }
 .topbar .brand {
-  font-weight: 700;
-  color: var(--text);
-  font-size: 1.05rem;
-  margin-right: 0.25rem;
+  display: none; /* brand lives in sidebar on desktop */
 }
-.topbar .brand:hover { text-decoration: none; color: #fff; }
 .topbar .ext {
-  font-size: 0.9rem;
-  color: var(--muted);
-  padding: 0.25rem 0.55rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text);
+  padding: 0.28rem 0.7rem;
   border: 1px solid var(--border);
   border-radius: 6px;
+  background: transparent;
 }
 .topbar .ext:hover {
-  color: var(--accent);
   border-color: var(--accent);
+  color: var(--accent);
   text-decoration: none;
+  background: var(--accent-soft);
 }
 .topbar .lang {
   margin-left: auto;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   color: var(--muted);
 }
+.topbar .lang a { color: var(--muted); }
+.topbar .lang a:hover { color: var(--accent); }
 
-/* Layout: sidebar + content */
-.layout {
-  display: flex;
-  min-height: calc(100vh - var(--top-h));
-}
+/* ===== Fixed left sidebar (Claude-like) ===== */
 .sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
   width: var(--sidebar-w);
-  flex-shrink: 0;
-  background: var(--surface);
+  z-index: 110;
+  background: var(--sidebar-bg);
   border-right: 1px solid var(--border);
-  padding: 1.1rem 0.75rem 2rem;
-  position: sticky;
-  top: var(--top-h);
-  height: calc(100vh - var(--top-h));
+  padding: 0.85rem 0.65rem 1.5rem;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.sidebar .side-brand {
+  display: block;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--text);
+  padding: 0.55rem 0.75rem 0.85rem;
+  margin-bottom: 0.25rem;
+  border-bottom: 1px solid var(--border);
+}
+.sidebar .side-brand:hover {
+  color: #fff;
+  text-decoration: none;
 }
 .sidebar .nav-label {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.07em;
   color: var(--muted);
-  padding: 0.35rem 0.7rem 0.45rem;
-  margin-top: 0.35rem;
+  padding: 0.85rem 0.75rem 0.35rem;
 }
-.sidebar a {
+.sidebar a.nav-item {
   display: block;
-  padding: 0.4rem 0.7rem;
-  border-radius: 6px;
+  padding: 0.48rem 0.75rem;
+  border-radius: 8px;
   color: var(--muted);
   font-size: 0.92rem;
-  margin: 0.1rem 0;
+  margin: 0.08rem 0.2rem;
+  border-left: 3px solid transparent;
 }
-.sidebar a:hover {
-  background: var(--accent-soft);
+.sidebar a.nav-item:hover {
+  background: rgba(255,255,255,0.04);
   color: var(--text);
   text-decoration: none;
 }
-.sidebar a.active {
+.sidebar a.nav-item.active {
   background: var(--accent-soft);
   color: #fff;
   font-weight: 600;
-  border-left: 3px solid var(--accent);
-  padding-left: calc(0.7rem - 3px);
+  border-left-color: var(--accent);
 }
 
-.content {
-  flex: 1;
-  min-width: 0;
+/* Main content shifted right of fixed sidebar */
+.layout {
+  margin-left: var(--sidebar-w);
+  padding-top: var(--top-h);
+  min-height: 100vh;
 }
+.content { min-width: 0; }
 .wrap {
   max-width: 860px;
   margin: 0 auto;
-  padding: 1.5rem 1.5rem 3rem;
+  padding: 1.5rem 1.75rem 3rem;
 }
 
-.hero { text-align: center; padding: 1.5rem 0 0.5rem; }
+.hero { text-align: center; padding: 1.25rem 0 0.5rem; }
 .hero img { display: block; margin: 0 auto 1rem; }
 .hero h1 { margin: 0.25rem 0; font-size: 2rem; }
 .lead { color: var(--muted); max-width: 36rem; margin: 0.75rem auto 1rem; }
@@ -144,9 +163,9 @@ a:hover { text-decoration: underline; }
 }
 .card h3 { margin: 0 0 0.4rem; font-size: 1.05rem; }
 .card p { margin: 0; color: var(--muted); font-size: 0.92rem; }
-h1 { font-size: 1.75rem; margin-top: 0.5rem; }
+h1 { font-size: 1.7rem; margin-top: 0.5rem; }
 h2 {
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   margin-top: 1.75rem;
   border-bottom: 1px solid var(--border);
   padding-bottom: 0.35rem;
@@ -203,37 +222,49 @@ footer {
   font-size: 0.85rem;
 }
 
-/* Mobile: stack sidebar under topbar */
-@media (max-width: 800px) {
-  .layout { flex-direction: column; }
+/* ===== Mobile: collapse sidebar ===== */
+@media (max-width: 768px) {
   .sidebar {
+    position: relative;
     width: 100%;
     height: auto;
-    position: relative;
-    top: 0;
     border-right: none;
     border-bottom: 1px solid var(--border);
-    padding: 0.6rem 0.75rem 0.85rem;
-    display: flex;
+    flex-direction: row;
     flex-wrap: wrap;
-    gap: 0.15rem 0.25rem;
     align-items: center;
+    padding: 0.5rem 0.6rem 0.65rem;
+    z-index: 1;
   }
-  .sidebar .nav-label {
+  .sidebar .side-brand {
     width: 100%;
-    margin-top: 0.15rem;
-    padding-bottom: 0.15rem;
+    border-bottom: none;
+    padding: 0.35rem 0.5rem;
+    margin: 0;
   }
-  .sidebar a {
+  .sidebar .nav-label { display: none; }
+  .sidebar a.nav-item {
     display: inline-block;
-    margin: 0.05rem;
+    margin: 0.1rem;
     padding: 0.3rem 0.55rem;
-    font-size: 0.85rem;
-  }
-  .sidebar a.active {
+    font-size: 0.84rem;
     border-left: none;
-    padding-left: 0.55rem;
+  }
+  .sidebar a.nav-item.active {
     border-bottom: 2px solid var(--accent);
+    border-radius: 6px;
+  }
+  .topbar {
+    position: relative;
+    padding: 0 0.85rem;
+    left: 0;
+  }
+  .topbar .brand {
+    display: none;
+  }
+  .layout {
+    margin-left: 0;
+    padding-top: 0;
   }
   .hero h1 { font-size: 1.45rem; }
   .wrap { padding: 1.1rem 1rem 2.5rem; }
