@@ -6,26 +6,38 @@
   <title>ARMA · makystats</title>
   <meta name="description" content="makystats documentation"/>
   <link rel="stylesheet" href="../css/style.css"/>
+  <script src="../js/nav.js" defer></script>
 </head>
 <body>
-<aside class="sidebar">
-  <a class="side-brand" href="index.html">makystats</a>
-  <div class="nav-label">Documentation</div>
-  <a class="nav-item" href="index.html">Accueil</a>
-  <a class="nav-item" href="install.html">Installation</a>
-  <a class="nav-item active" href="arma.html">ARMA</a>
-  <a class="nav-item" href="armagarch.html">ARMA-GARCH</a>
-  <a class="nav-item" href="var.html">VAR</a>
-  <a class="nav-item" href="vecm.html">VECM</a>
-  <a class="nav-item" href="ardl.html">ARDL</a>
-  <a class="nav-item" href="examples.html">Exemples</a>
-</aside>
-<div class="main-col">
-  <header class="topbar">
-    <a class="ext" href="https://github.com/Lauret-Boris/makystats" rel="noopener">GitHub</a>
-    <a class="ext" href="https://pypi.org/project/makystats/" rel="noopener">PyPI</a>
-    <span class="lang">FR · <a href="../arma.html">EN</a></span>
-  </header>
+<header class="topbar">
+  <button type="button" class="menu-btn" id="menu-btn" aria-controls="sidebar" aria-expanded="true" aria-label="Menu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+  <a class="brand" href="index.html">makystats</a>
+  <a class="ext" href="https://github.com/Lauret-Boris/makystats" rel="noopener">GitHub</a>
+  <a class="ext" href="https://pypi.org/project/makystats/" rel="noopener">PyPI</a>
+  <span class="lang">FR · <a href="../arma.html">EN</a></span>
+</header>
+<div class="body-row">
+  <aside class="sidebar" id="sidebar">
+    <a class="nav-item" href="index.html">Accueil</a>
+    <a class="nav-item" href="install.html">Installation</a>
+    <div class="nav-group" id="nav-models">
+      <button type="button" class="nav-group-toggle" id="nav-models-toggle" aria-expanded="true" aria-controls="nav-models-items">
+        <span>Modèles</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="nav-group-items" id="nav-models-items">
+      <a class="nav-item active" href="arma.html">ARMA</a>
+      <a class="nav-item" href="armagarch.html">ARMA-GARCH</a>
+      <a class="nav-item" href="var.html">VAR</a>
+      <a class="nav-item" href="vecm.html">VECM</a>
+      <a class="nav-item" href="ardl.html">ARDL</a>
+      </div>
+    </div>
+    <a class="nav-item" href="examples.html">Exemples</a>
+  </aside>
+  <button type="button" class="sidebar-backdrop" id="sidebar-backdrop" aria-label="Close menu"></button>
   <div class="scroll">
     <main class="wrap">
 <h1>ARMA / ARIMA / SARIMA</h1>
