@@ -1,4 +1,3 @@
-
 <p align="center">
   <img src="https://raw.githubusercontent.com/Lauret-Boris/makystats/main/docs/logo_makystats.png" alt="makystats logo" width="280"/>
 </p>
@@ -12,21 +11,18 @@
 [![GitHub last commit](https://img.shields.io/github/last-commit/Lauret-Boris/makystats)](https://github.com/Lauret-Boris/makystats/commits/main)
 [![Downloads](https://img.shields.io/pypi/dm/makystats)](https://pypi.org/project/makystats/)
 
-**Econometrics toolkit for Python** — ARMA–GARCH (MLE), VAR (native OLS), and VECM / Johansen cointegration.
-
-
-# makystats
-
-**Econometrics toolkit for Python** — ARMA–GARCH (MLE), VAR (native OLS), and VECM / Johansen cointegration.
+**Econometrics toolkit for Python** — ARMA (constant variance), ARMA–GARCH (MLE), VAR (native OLS), VECM / Johansen, and **ARDL** (bounds test, ECM, forecasts).
 
 | | |
 |---|---|
 | **Install** | `pip install makystats` |
 | **Python** | >= 3.9 (tested up to 3.14) |
 | **License** | MIT |
-| **Version** | 0.1.1 |
+| **Version** | 0.1.3 |
 
-Full technical guides: [VECM](https://github.com/Lauret-Boris/makystats/blob/main/makystats/vecm/DOCUMENTATION.md), [VAR](https://github.com/Lauret-Boris/makystats/blob/main/makystats/var_model/README.md), [ARMA-GARCH](https://github.com/Lauret-Boris/makystats/blob/main/makystats/armagarch/DOCUMENTATION.md) (also shipped inside the installed package).
+**Documentation:** [Online user guide (EN/FR)](https://Lauret-Boris.github.io/makystats/).
+
+Full technical guides: [VECM](https://github.com/Lauret-Boris/makystats/blob/main/makystats/vecm/DOCUMENTATION.md), [VAR](https://github.com/Lauret-Boris/makystats/blob/main/makystats/var_model/README.md), [ARMA-GARCH](https://github.com/Lauret-Boris/makystats/blob/main/makystats/armagarch/DOCUMENTATION.md), [ARMA](https://github.com/Lauret-Boris/makystats/blob/main/makystats/arma/README.md), [ARDL](https://github.com/Lauret-Boris/makystats/blob/main/makystats/ardl/DOCUMENTATION.md) (also shipped inside the installed package).
 
 *Version française :* [`README.fr.md`](https://github.com/Lauret-Boris/makystats/blob/main/README.fr.md).
 
@@ -40,6 +36,12 @@ Full technical guides: [VECM](https://github.com/Lauret-Boris/makystats/blob/mai
 ---
 
 ## Features
+
+**ARMA (`makystats.arma`)**
+
+- Homoskedastic ARMA / AR / ARX / HAR (MLE) — same mean API as `arma_garch`, **no** GARCH dynamics
+- Deterministics `trend` = `n` / `c` / `t` / `ct`; order selection via `select_arma_order`
+- Use when only the mean equation is needed; switch to `arma_garch` for conditional volatility / VaR
 
 **Volatility (`makystats.armagarch`)**
 
@@ -80,6 +82,11 @@ pip install -e ".[numba,plot,test]"
 
 ---
 
+## Online documentation
+
+User-facing pages (EN/FR): [https://Lauret-Boris.github.io/makystats/](https://Lauret-Boris.github.io/makystats/)  
+Built from the `website/` folder (GitHub Pages). The repository `docs/` folder holds formula images for this README and is **not** the Pages root.
+
 ## Documentation on this page
 
 Table of contents:
@@ -89,6 +96,8 @@ Table of contents:
 | [Quick start — VAR](#quick-start--var) | Order selection, fit, IRF, forecast |
 | [Quick start — VECM](#quick-start--vecm) | Rank test, estimation, forecast |
 | [VECM reference](#vecm-reference) | Parameters, API, JHJ, forecasts, diagnostics |
+| [Quick start — ARMA](#quick-start--arma) | Homoskedastic ARMA |
+| [Quick start — ARDL](#quick-start--ardl) | Bounds test, ECM, forecasts |
 | [Quick start — ARMA–GARCH](#quick-start--arma-garch) | Fit, order selection |
 | [§1–§8](#1-statistical-model) | Full ARMA–GARCH technical guide |
 
@@ -99,8 +108,38 @@ python -c "import makystats.vecm, pathlib; print(pathlib.Path(makystats.vecm.__f
 python -c "import makystats.armagarch, pathlib; print(pathlib.Path(makystats.armagarch.__file__).parent / 'DOCUMENTATION.md')"
 ```
 
-In-process help: `help(VAR)`, `help(VECM)`, `help(arma_garch)`, `help(select_var_order)`, `help(select_coint_rank)`.
+In-process help: `help(VAR)`, `help(VECM)`, `help(ardl)`, `help(arma)`, `help(arma_garch)`, `help(select_var_order)`, `help(select_coint_rank)`, `help(select_ardl_order)`.
 
+
+---
+
+## Quick start — ARMA
+
+Homoskedastic ARMA / ARIMA / SARIMA (constant variance). Time index of `y` is preserved.
+
+```python
+from makystats import arma, arima, sarima, select_arma_order
+
+res = arma(y, mean='ARMA', ar=1, ma=1, trend='c').fit()
+print(res.params['AR(1)'], res.bse, res.pvalues)
+print(res.cov_params())
+print(res.arroots, res.maroots)          # |root| > 1 preferred
+res.test_normality()
+res.test_serial_correlation(10)
+print(res.forecast(steps=5, conf_int=True))
+
+# ARIMA (d=1) and SARIMA
+res = arima(prices, order=(1, 1, 1), trend='c').fit()
+res = arma(ylog, mean='ARMA', ar=0, ma=1, d=1,
+           seasonal_order=(0, 1, 1, 12), trend='n').fit()
+
+tab = select_arma_order(y, p_range=range(0, 4), q_range=range(0, 3), criterion='bic')
+tab = select_arma_order(ylog, d=1, seasonal_order=(0, 1, 1, 12),
+                        p_range=range(0, 3), q_range=range(0, 2))
+```
+
+For conditional volatility, VaR, or GARCH-M, use `arma_garch` instead.  
+Details: [makystats/arma/README.md](makystats/arma/README.md).
 
 ---
 
@@ -212,7 +251,7 @@ Intervals (`conf_int=True`) support three methods — **parameters held fixed** 
 | `'bootstrap'` | Resample residual **rows** (preserves contemporaneous correlation); empirical percentiles |
 | `'gaussian'` | Draws from N(0, Σ_u); empirical percentiles |
 
-Aliases: `'eviews'` / `'simulation'` → bootstrap; `'mc'` / `'normal'` → gaussian.
+Aliases: `'simulation'` → bootstrap; `'mc'` / `'normal'` → gaussian.
 
 Analytic MSE at horizon h (levels VAR equivalent, Lütkepohl):
 
@@ -229,6 +268,52 @@ Analytic MSE at horizon h (levels VAR equivalent, Lütkepohl):
 3. Re-estimate short-run equation with detrended ECT → outside deterministics and all SEs refreshed; α and Γ unchanged  
 
 ---
+
+
+---
+
+## Quick start — ARDL
+
+Native OLS ARDL with Pesaran bounds test, long-run multipliers, ECM, and conditional forecasts.
+
+```python
+from makystats import ardl, select_ardl_order
+import numpy as np
+
+res = ardl(y, x=x, lags=2, order=2, case=3).fit(verbose=False)
+
+res.summary()            # ARDL + residual diagnostics
+res.summary_uecm()       # UECM + long-run table
+res.summary_ecm()        # error-correction term α
+res.summary_bounds()     # Pesaran / Narayan critical values
+
+print(res.params, res.bse, res.pvalues)
+print(res.cov_params())
+print(res.diagnostic_summary())   # JB + Ljung-Box + ARCH-LM
+
+print(res.bounds["f_stat"])
+print(res.long_run_table)
+df_lr = res.long_run_fitted()    # y, fitted_lr, ect
+res.plot_long_run_fitted()
+
+# Order selection (homogeneous or per-variable maxorder)
+tab = select_ardl_order(y, x=x, maxlag=4, maxorder=2, case=3, ic="bic", verbose=False)
+# tab = select_ardl_order(y, x=x, maxlag=3, maxorder={"R": 2, "oil": 1}, case=3)
+tab.best_model.summary_bounds()
+
+# Fixed regressors (outside the cointegrating relation)
+# res = ardl(y, x=x, lags=2, order=2, case=3, fixed=z).fit(verbose=False)
+
+# Restricted ECM then forecast (levels)
+res.restrict_ecm(pvalue=0.10, keep_levels=True)
+exog_f = np.full((8, x.shape[1] if hasattr(x, "shape") else 1), 0.0)  # scenario for x
+print(res.forecast(steps=8, exog_future=exog_f, conf_int=True))
+print(res.forecast_ecm(steps=8, exog_future=exog_f, restricted=True, level=True, conf_int=True))
+```
+
+`case=1…5` follows the PSS specification (None / Rest. Constant / Constant / Rest. Trend / Trend).  
+See [makystats/ardl/README.md](makystats/ardl/README.md) and [DOCUMENTATION.md](makystats/ardl/DOCUMENTATION.md).
+
 
 ## Quick start — ARMA–GARCH
 
@@ -258,7 +343,7 @@ For observations y_t, t = 1, …, n:
 - Index sets I_AR, I_MA may be consecutive {1, …, p} or sparse (e.g. {5} only).
 - **ARX**: AR terms + exogenous x_t, no MA.
 - **ARMAX**: AR + MA + x_t.
-- **GARCH-M (ARCH-M)**: `in_mean='sigma'|'var'|'log'` — λ·f(σ_t) in the mean (EViews Variance = `'var'`); coefficient label `archm`. Also on `select_order(..., in_mean=)`. Careful if σ² is nearly flat (const ↔ λ).
+- **GARCH-M (ARCH-M)**: `in_mean='sigma'|'var'|'log'` — λ·f(σ_t) in the mean (`'var'` = variance form); coefficient label `archm`. Also on `select_order(..., in_mean=)`. Careful if σ² is nearly flat (const ↔ λ).
 - **Post-fit without re-passing y/x**: `forecast()`, `var()`, `results_frame()`, … reuse series from `fit()`; future `x` defaults to last row.
 - **VaR / ES**: `var()` / `expected_shortfall()` with `aggregation="marginal"` (quantile of y_{T+h}, default) or `"cumulative"` (Monte Carlo sum over h days; `n_sims`, `seed`). In-sample 1-step only: `var_series()` → `var_fitted_`, `var_backtest()` (Kupiec), `plot_var(..., window=, style=)`. Methods: parametric or FHS.
 - **Exogenous names**: pass `x` as a `DataFrame` so `coef_table` uses column names; with an `ndarray`, use `fit(..., x_names=[...])`.
@@ -537,4 +622,4 @@ python -m pytest tests/ -q
 
 ## License
 
-MIT. Version **0.1.1**.
+MIT. Version **0.1.3**.
