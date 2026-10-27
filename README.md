@@ -18,7 +18,7 @@
 | **Install** | `pip install makystats` |
 | **Python** | >= 3.9 (tested up to 3.14) |
 | **License** | MIT |
-| **Version** | 0.1.3 |
+| **Version** | 0.1.4 |
 
 **Documentation:** [Online user guide (EN/FR)](https://Lauret-Boris.github.io/makystats/).
 
@@ -65,6 +65,11 @@ Full technical guides: [VECM](https://github.com/Lauret-Boris/makystats/blob/mai
 - Native multi-step forecasts (`variables=` filter), IRF, FEVD, diagnostics
 
 ---
+
+## Release 0.1.4
+
+- **ARDL**: ECM short-run intercept for PSS cases 3–5 (case 4 = unrestricted constant + restricted trend); Bardsen/UECM exact for `order=0` (`Δx` term); bounds SSR consistent with the ARDL reparameterisation.
+- Notebooks under `exemples/ARDL/` split `summary()`, `summary_uecm()` + `summary_bounds()`, and `summary_ecm()`.
 
 ## Installation
 
@@ -622,4 +627,4 @@ python -m pytest tests/ -q
 
 ## License
 
-MIT. Version **0.1.3**.
+MIT. Version **0.1.4**.
