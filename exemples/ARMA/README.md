@@ -13,3 +13,7 @@ jupyter notebook Airline_Passengers_SARIMA.ipynb
 ```
 
 Requires **makystats ≥ 0.1.3**.
+
+| `Inflation_ARMA.ipynb` | Quarterly inflation (`Dp`) · AR(4), selection, forecast |
+| `data/interest_inflation.csv` | year, quarter, Dp, R |
+
