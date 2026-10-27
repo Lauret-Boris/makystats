@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Examples · makystats</title>
+  <title>Exemples · makystats</title>
   <meta name="description" content="makystats documentation"/>
-  <link rel="stylesheet" href="css/style.css"/>
-  <script src="js/nav.js" defer></script>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <script src="../js/nav.js" defer></script>
 </head>
 <body>
 <header class="topbar">
@@ -16,15 +16,15 @@
   <a class="brand" href="index.html">makystats</a>
   <a class="ext" href="https://github.com/Lauret-Boris/makystats" rel="noopener">GitHub</a>
   <a class="ext" href="https://pypi.org/project/makystats/" rel="noopener">PyPI</a>
-  <span class="lang"><a href="fr/examples.html">FR</a> · EN</span>
+  <span class="lang">FR · <a href="../examples.html">EN</a></span>
 </header>
 <div class="body-row">
   <aside class="sidebar" id="sidebar">
-    <a class="nav-item" href="index.html">Home</a>
-    <a class="nav-item" href="install.html">Install</a>
+    <a class="nav-item" href="index.html">Accueil</a>
+    <a class="nav-item" href="install.html">Installation</a>
     <div class="nav-group" id="nav-models">
       <button type="button" class="nav-group-toggle" id="nav-models-toggle" aria-expanded="true" aria-controls="nav-models-items">
-        <span>Models</span>
+        <span>Modèles</span>
         <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
       </button>
       <div class="nav-group-items" id="nav-models-items">
@@ -35,50 +35,60 @@
       <a class="nav-item" href="ardl.html">ARDL</a>
       </div>
     </div>
-    <a class="nav-item active" href="examples.html">Examples</a>
+    <a class="nav-item active" href="examples.html">Exemples</a>
   </aside>
   <button type="button" class="sidebar-backdrop" id="sidebar-backdrop" aria-label="Close menu"></button>
   <div class="scroll">
     <main class="wrap">
-<h1>Examples</h1>
+<h1>Exemples</h1>
 <p>
-  Worked examples live in the GitHub repository under
-  <a href="https://github.com/Lauret-Boris/makystats/tree/main/exemples"><code>exemples/</code></a>
-  (French folder name). They are <strong>not</strong> shipped inside the PyPI wheel
-  and are <strong>not</strong> copied onto this documentation site — only linked.
+  Les exemples travaillés se trouvent dans le dépôt GitHub, dossier
+  <a href="https://github.com/Lauret-Boris/makystats/tree/main/exemples"><code>exemples/</code></a>.
+  Ils ne sont <strong>pas</strong> inclus dans le paquet PyPI et ne sont
+  <strong>pas</strong> copiés sur ce site de documentation — uniquement reliés.
 </p>
 
 <div class="note">
-  Only notebooks present on the public repository are listed here.
-  More examples will appear as they are added under <code>exemples/</code>.
+  Seuls les notebooks présents sur le dépôt public sont listés ici.
+  D’autres exemples apparaîtront au fur et à mesure qu’ils seront ajoutés sous <code>exemples/</code>.
 </div>
 
-<h2>Available now</h2>
+<h2>Disponible actuellement</h2>
 <table>
-  <tr><th>Topic</th><th>Notebook</th><th>Open</th></tr>
+  <tr><th>Thème</th><th>Notebook</th><th>Ouvrir</th></tr>
   <tr>
-    <td>VECM / Johansen<br/><span class="muted">Canada data · JSS-style replication</span></td>
+    <td>VECM / Johansen<br/><span class="muted">Données Canada · réplication style JSS</span></td>
     <td><code>exemples/VECM/</code></td>
     <td>
-      <a href="https://github.com/Lauret-Boris/makystats/tree/main/exemples/VECM">Folder</a> ·
+      <a href="https://github.com/Lauret-Boris/makystats/tree/main/exemples/VECM">Dossier</a> ·
       <a href="https://github.com/Lauret-Boris/makystats/blob/main/exemples/VECM/Canada_VECM_JSS_Replication%20.ipynb">GitHub</a> ·
       <a href="https://nbviewer.org/github/Lauret-Boris/makystats/blob/main/exemples/VECM/Canada_VECM_JSS_Replication%20.ipynb">nbviewer</a> ·
       <a href="https://colab.research.google.com/github/Lauret-Boris/makystats/blob/main/exemples/VECM/Canada_VECM_JSS_Replication%20.ipynb">Colab</a>
     </td>
   </tr>
   <tr>
-    <td>ARMA / SARIMA<br/><span class="muted">Airline passengers · Box–Jenkins</span></td>
+    <td>ARMA / SARIMA<br/><span class="muted">Passagers aériens · Box–Jenkins</span></td>
     <td><code>exemples/ARMA/</code></td>
     <td>
-      <a href="https://github.com/Lauret-Boris/makystats/tree/main/exemples/ARMA">Folder</a> ·
+      <a href="https://github.com/Lauret-Boris/makystats/tree/main/exemples/ARMA">Dossier</a> ·
       <a href="https://github.com/Lauret-Boris/makystats/blob/main/exemples/ARMA/Airline_Passengers_SARIMA.ipynb">GitHub</a> ·
       <a href="https://nbviewer.org/github/Lauret-Boris/makystats/blob/main/exemples/ARMA/Airline_Passengers_SARIMA.ipynb">nbviewer</a> ·
       <a href="https://colab.research.google.com/github/Lauret-Boris/makystats/blob/main/exemples/ARMA/Airline_Passengers_SARIMA.ipynb">Colab</a>
     </td>
   </tr>
+  <tr>
+    <td>ARMA<br/><span class="muted">Inflation trimestrielle · AR(4)</span></td>
+    <td><code>exemples/ARMA/</code></td>
+    <td>
+      <a href="https://github.com/Lauret-Boris/makystats/tree/main/exemples/ARMA">Dossier</a> ·
+      <a href="https://github.com/Lauret-Boris/makystats/blob/main/exemples/ARMA/Inflation_ARMA.ipynb">GitHub</a> ·
+      <a href="https://nbviewer.org/github/Lauret-Boris/makystats/blob/main/exemples/ARMA/Inflation_ARMA.ipynb">nbviewer</a> ·
+      <a href="https://colab.research.google.com/github/Lauret-Boris/makystats/blob/main/exemples/ARMA/Inflation_ARMA.ipynb">Colab</a>
+    </td>
+  </tr>
 </table>
 
-<h2>How to run locally</h2>
+<h2>Exécution en local</h2>
 <pre><code>git clone https://github.com/Lauret-Boris/makystats.git
 cd makystats
 pip install -e ".[plot]"
@@ -86,15 +96,15 @@ jupyter notebook exemples/VECM/
 </code></pre>
 
 <p class="muted">
-  Requirements typically include <code>makystats</code>, <code>pandas</code>, <code>matplotlib</code>,
-  and any data files shipped next to the notebook under <code>exemples/VECM/data/</code>.
+  Prérequis habituels : <code>makystats</code>, <code>pandas</code>, <code>matplotlib</code>,
+  et les fichiers de données fournis sous <code>exemples/VECM/data/</code>.
 </p>
 <footer>
-  <p>makystats v0.1.3 · MIT License ·
+  <p>makystats v0.1.3 · Licence MIT ·
     <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
     <a href="https://pypi.org/project/makystats/">PyPI</a> ·
-    Author: ANDRIANITOVIANA Lauret Boris</p>
-  <p class="muted">Documentation site only — source code lives in the repository and on PyPI, not on these pages.</p>
+    Auteur : ANDRIANITOVIANA Lauret Boris</p>
+  <p class="muted">Site de documentation uniquement — le code source est dans le dépôt et sur PyPI, pas sur ces pages.</p>
 </footer>
     </main>
   </div>
