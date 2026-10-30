@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Home · makystats</title>
+  <meta name="description" content="makystats documentation"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <script src="js/nav.js" defer></script>
+</head>
+<body>
+<header class="topbar">
+  <button type="button" class="menu-btn" id="menu-btn" aria-controls="sidebar" aria-expanded="true" aria-label="Menu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+  <a class="brand" href="index.html">makystats</a>
+  <a class="ext" href="https://github.com/Lauret-Boris/makystats" rel="noopener">GitHub</a>
+  <a class="ext" href="https://pypi.org/project/makystats/" rel="noopener">PyPI</a>
+  <span class="lang"><a href="fr/index.html">FR</a> · EN</span>
+</header>
+<div class="body-row">
+  <aside class="sidebar" id="sidebar">
+    <a class="nav-item active" href="index.html">Home</a>
+    <a class="nav-item" href="install.html">Install</a>
+    <div class="nav-group" id="nav-models">
+      <button type="button" class="nav-group-toggle" id="nav-models-toggle" aria-expanded="true" aria-controls="nav-models-items">
+        <span>Models</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="nav-group-items" id="nav-models-items">
+      <a class="nav-item" href="arma.html">ARMA</a>
+      <a class="nav-item" href="armagarch.html">ARMA-GARCH</a>
+      <a class="nav-item" href="var.html">VAR</a>
+      <a class="nav-item" href="vecm.html">VECM</a>
+      <a class="nav-item" href="ardl.html">ARDL</a>
+      </div>
+    </div>
+    <a class="nav-item" href="examples.html">Examples</a>
+  </aside>
+  <button type="button" class="sidebar-backdrop" id="sidebar-backdrop" aria-label="Close menu"></button>
+  <div class="scroll">
+    <main class="wrap">
+<section class="hero">
+  <img src="https://raw.githubusercontent.com/Lauret-Boris/makystats/main/docs/logo_makystats.png" alt="makystats logo" width="220"/>
+  <h1>makystats</h1>
+  <p class="lead">Econometrics toolkit for Python — ARMA, ARMA–GARCH (MLE), VAR, VECM / Johansen, and ARDL (bounds test, ECM).</p>
+  <div class="badges">
+    <span class="badge">v0.1.4</span>
+    <span class="badge">Python ≥ 3.9</span>
+    <span class="badge">MIT</span>
+    <span class="badge">pip install makystats</span>
+  </div>
+</section>
+
+<h2>Modules</h2>
+<div class="grid">
+  <div class="card"><h3><a href="arma.html">ARMA</a></h3><p>Homoskedastic AR / ARMA / ARIMA / SARIMA. Order selection, diagnostics, level forecasts with index preservation.</p></div>
+  <div class="card"><h3><a href="armagarch.html">ARMA–GARCH</a></h3><p>Joint MLE: mean + GARCH / GJR / EGARCH / APARCH / FIGARCH. VaR &amp; ES, seasonal mean.</p></div>
+  <div class="card"><h3><a href="var.html">VAR</a></h3><p>Native OLS VAR, IRF, FEVD, Granger causality, order selection.</p></div>
+  <div class="card"><h3><a href="vecm.html">VECM</a></h3><p>Johansen cointegration, MHM p-values, eight deterministic cases, forecasts.</p></div>
+  <div class="card"><h3><a href="ardl.html">ARDL</a></h3><p>Bounds test, UECM, restricted ECM, long-run coefficients, CUSUM stability.</p></div>
+</div>
+
+<h2>Installation</h2>
+<pre><code>pip install makystats
+pip install "makystats[numba]"
+pip install "makystats[plot]"</code></pre>
+<p>See the <a href="install.html">Install</a> page.</p>
+
+<div class="note">
+  This site is the <strong>user-oriented</strong> overview (EN/FR).
+  Full technical guides also ship <em>inside</em> the installed package and on GitHub:
+  <code>makystats/arma</code>, <code>armagarch</code>, <code>var_model</code>, <code>vecm</code>, <code>ardl</code>
+  (<code>README.md</code> / <code>DOCUMENTATION.md</code>).
+  Formula images stay in the repository <code>docs/</code> folder (not the Pages root).
+</div>
+<footer>
+  <p>makystats v0.1.4 · MIT License ·
+    <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
+    <a href="https://pypi.org/project/makystats/">PyPI</a> ·
+    Author: ANDRIANITOVIANA Lauret Boris</p>
+  <p class="muted">Documentation site only — source code lives in the repository and on PyPI, not on these pages.</p>
+</footer>
+    </main>
+  </div>
+</div>
+</body>
+</html>

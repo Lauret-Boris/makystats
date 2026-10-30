@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>ARMA · makystats</title>
+  <meta name="description" content="makystats documentation"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <script src="js/nav.js" defer></script>
+</head>
+<body>
+<header class="topbar">
+  <button type="button" class="menu-btn" id="menu-btn" aria-controls="sidebar" aria-expanded="true" aria-label="Menu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+  <a class="brand" href="index.html">makystats</a>
+  <a class="ext" href="https://github.com/Lauret-Boris/makystats" rel="noopener">GitHub</a>
+  <a class="ext" href="https://pypi.org/project/makystats/" rel="noopener">PyPI</a>
+  <span class="lang"><a href="fr/arma.html">FR</a> · EN</span>
+</header>
+<div class="body-row">
+  <aside class="sidebar" id="sidebar">
+    <a class="nav-item" href="index.html">Home</a>
+    <a class="nav-item" href="install.html">Install</a>
+    <div class="nav-group" id="nav-models">
+      <button type="button" class="nav-group-toggle" id="nav-models-toggle" aria-expanded="true" aria-controls="nav-models-items">
+        <span>Models</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="nav-group-items" id="nav-models-items">
+      <a class="nav-item active" href="arma.html">ARMA</a>
+      <a class="nav-item" href="armagarch.html">ARMA-GARCH</a>
+      <a class="nav-item" href="var.html">VAR</a>
+      <a class="nav-item" href="vecm.html">VECM</a>
+      <a class="nav-item" href="ardl.html">ARDL</a>
+      </div>
+    </div>
+    <a class="nav-item" href="examples.html">Examples</a>
+  </aside>
+  <button type="button" class="sidebar-backdrop" id="sidebar-backdrop" aria-label="Close menu"></button>
+  <div class="scroll">
+    <main class="wrap">
+<h1>ARMA / ARIMA / SARIMA</h1>
+<p>MLE for <strong>ARMA</strong>, <strong>ARIMA</strong> or <strong>SARIMA</strong> <em>without</em> GARCH:
+a single variance parameter <code>σ²</code>.</p>
+<p>The time <strong>index</strong> of <code>y</code> (DatetimeIndex, PeriodIndex, …) is preserved
+on residuals, fitted values and forecasts. If <code>d</code> or <code>D</code> &gt; 0, leading NaNs
+appear (alignment on the full sample).</p>
+
+<p class="muted">Source README:
+  <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/arma/README.md"><code>makystats/arma/README.md</code></a>
+</p>
+
+<h2>Import</h2>
+<pre><code>from makystats import arma, arima, sarima, select_arma_order
+# or: from makystats.arma import ARMA, arma, ...
+</code></pre>
+
+<h2>ARMA (stationary, <code>d=0</code>)</h2>
+<pre><code>res = arma(y, mean="ARMA", ar=1, ma=1, trend="c").fit()
+print(res.coef_table)
+print(res.params["AR(1)"])       # named Series
+print(res.bse, res.pvalues)
+print(res.cov_params())
+print(res.forecast(steps=5, conf_int=True))
+</code></pre>
+
+<h2>ARIMA (levels, often I(1))</h2>
+<p>The user does <strong>not</strong> need to difference by hand:</p>
+<pre><code>res = arma(prices, mean="ARMA", ar=1, ma=1, d=1, trend="c").fit()
+res = arima(prices, order=(1, 1, 1), trend="c").fit()
+
+res.forecast(steps=10)                # levels (default if d&gt;0)
+res.forecast(steps=10, levels=False)  # on Δy
+res.fitted_values_level()             # fitted in levels
+</code></pre>
+<table>
+  <tr><th><code>d</code></th><th>Role</th></tr>
+  <tr><td><code>0</code></td><td>ARMA on <code>y</code></td></tr>
+  <tr><td><code>1</code></td><td>ARIMA on non-stationary levels</td></tr>
+  <tr><td><code>2</code></td><td>Double differencing (rare)</td></tr>
+</table>
+<p>On Δy, <code>trend='c'</code> is a <strong>drift</strong> in levels (constant on differences).</p>
+
+<h2>SARIMA</h2>
+<pre><code># Multiplicative form via SARIMAX (dense orders)
+res = arma(ylog, mean="ARMA", ar=0, ma=1, d=1,
+           seasonal_order=(0, 1, 1, 12), trend="n").fit()
+
+res = sarima(ylog, order=(0, 1, 1), seasonal_order=(0, 1, 1, 12), trend="n").fit()
+
+# Sparse (“gapped”) lags + season → native engine (additive seasonal lags)
+res = arma(ylog, mean="ARMA", ar=[4], ma=1, d=1,
+           seasonal_order=(1, 1, 1, 12), trend="c").fit()
+</code></pre>
+<table>
+  <tr><th><code>seasonal_order</code></th><th><code>(P, D, Q, s)</code></th></tr>
+  <tr><td><code>P</code>, <code>Q</code></td><td>Seasonal AR / MA</td></tr>
+  <tr><td><code>D</code></td><td>Seasonal differences (1−L<sup>s</sup>)<sup>D</sup></td></tr>
+  <tr><td><code>s</code></td><td>Period (12 = monthly, 4 = quarterly)</td></tr>
+</table>
+
+<h2>Results (after <code>fit</code>)</h2>
+<table>
+  <tr><th>Attribute / method</th><th>Content</th></tr>
+  <tr><td><code>params</code>, <code>coef</code>, <code>coefficients</code></td><td>Named coefficient Series</td></tr>
+  <tr><td><code>bse</code>, <code>se</code>, <code>pvalues</code>, <code>tvalues</code></td><td>Inference Series</td></tr>
+  <tr><td><code>coef_table</code></td><td>Coeff / SE / z / Prob. / CI</td></tr>
+  <tr><td><code>cov_params()</code></td><td>k×k covariance matrix</td></tr>
+  <tr><td><code>conf_int(alpha=0.05)</code></td><td>Coefficient CIs</td></tr>
+  <tr><td><code>aic</code>, <code>bic</code>, <code>hqic</code>, <code>llf</code>, <code>loglik</code></td><td>ICs and log-likelihood</td></tr>
+  <tr><td><code>nobs</code>, <code>df_model</code>, <code>df_resid</code></td><td>Sample sizes</td></tr>
+  <tr><td><code>residuals</code>, <code>resid</code>, <code>fitted_values</code></td><td>Indexed series</td></tr>
+  <tr><td><code>arparams</code>, <code>maparams</code></td><td>AR/SAR and MA/SMA subsets</td></tr>
+  <tr><td><code>arroots</code>, <code>maroots</code></td><td>Polynomial roots; |r| &gt; 1 desired</td></tr>
+  <tr><td><code>sigma2</code></td><td>Innovation variance</td></tr>
+</table>
+
+<h2>Diagnostics</h2>
+<pre><code>res.test_serial_correlation(lags=10)   # Ljung-Box
+res.test_heteroskedasticity(lags=5)    # ARCH-LM
+res.test_normality()                   # Jarque-Bera
+res.plot_diagnostics()
+</code></pre>
+
+<h2>Order selection</h2>
+<pre><code>tab = select_arma_order(y, p_range=range(0, 4), q_range=range(0, 3), criterion="bic")
+tab = select_arma_order(prices, d=1, p_range=range(0, 3), q_range=range(0, 2))
+tab = select_arma_order(
+    ylog, d=1, seasonal_order=(0, 1, 1, 12),
+    p_range=range(0, 3), q_range=range(0, 2), criterion="aic",
+)
+tab, best = select_arma_order(..., return_best=True)
+</code></pre>
+<p><code>d</code> and <code>seasonal_order</code> are <strong>fixed</strong> for the whole grid; only <code>p</code> and <code>q</code> vary.</p>
+
+<h2><code>arma</code> vs <code>arma_garch</code></h2>
+<table>
+  <tr><th>Need</th><th>Function</th></tr>
+  <tr><td>Mean only, possibly integrated / seasonal</td><td><strong><code>arma</code> / <code>arima</code> / <code>sarima</code></strong></td></tr>
+  <tr><td>Conditional volatility / VaR</td><td><strong><code>arma_garch</code></strong></td></tr>
+</table>
+
+<div class="note">
+  Forecast CIs in levels for <code>d&gt;0</code> are indicative (not exact state-space variance).
+  Coefficients are on the working scale (after <code>d</code>/<code>D</code>); <code>forecast</code> and
+  <code>fitted_values_level</code> rebuild levels. Dense SARIMA → multiplicative SARIMAX;
+  sparse ARMA + season → <strong>additive</strong> seasonal lags.
+</div>
+<footer>
+  <p>makystats v0.1.4 · MIT License ·
+    <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
+    <a href="https://pypi.org/project/makystats/">PyPI</a> ·
+    Author: ANDRIANITOVIANA Lauret Boris</p>
+  <p class="muted">Documentation site only — source code lives in the repository and on PyPI, not on these pages.</p>
+</footer>
+    </main>
+  </div>
+</div>
+</body>
+</html>

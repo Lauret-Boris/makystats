@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>VECM · makystats</title>
+  <meta name="description" content="makystats documentation"/>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <script src="../js/nav.js" defer></script>
+</head>
+<body>
+<header class="topbar">
+  <button type="button" class="menu-btn" id="menu-btn" aria-controls="sidebar" aria-expanded="true" aria-label="Menu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+  <a class="brand" href="index.html">makystats</a>
+  <a class="ext" href="https://github.com/Lauret-Boris/makystats" rel="noopener">GitHub</a>
+  <a class="ext" href="https://pypi.org/project/makystats/" rel="noopener">PyPI</a>
+  <span class="lang">FR · <a href="../vecm.html">EN</a></span>
+</header>
+<div class="body-row">
+  <aside class="sidebar" id="sidebar">
+    <a class="nav-item" href="index.html">Accueil</a>
+    <a class="nav-item" href="install.html">Installation</a>
+    <div class="nav-group" id="nav-models">
+      <button type="button" class="nav-group-toggle" id="nav-models-toggle" aria-expanded="true" aria-controls="nav-models-items">
+        <span>Modèles</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="nav-group-items" id="nav-models-items">
+      <a class="nav-item" href="arma.html">ARMA</a>
+      <a class="nav-item" href="armagarch.html">ARMA-GARCH</a>
+      <a class="nav-item" href="var.html">VAR</a>
+      <a class="nav-item active" href="vecm.html">VECM</a>
+      <a class="nav-item" href="ardl.html">ARDL</a>
+      </div>
+    </div>
+    <a class="nav-item" href="examples.html">Exemples</a>
+  </aside>
+  <button type="button" class="sidebar-backdrop" id="sidebar-backdrop" aria-label="Close menu"></button>
+  <div class="scroll">
+    <main class="wrap">
+<h1>VECM / Johansen</h1>
+<p>Modèles vectoriels à correction d’erreur et tests de rang de Johansen.</p>
+<ul>
+  <li>Régression reduced-rank (Johansen / Lütkepohl)</li>
+  <li>Huit spécifications déterministes, dont les variantes <strong>JHJ</strong></li>
+  <li>P-values et valeurs critiques MacKinnon–Haug–Michelis (1999)</li>
+  <li>IRF, FEVD, Granger, JB, whiteness, diagnostics et prévisions natifs</li>
+</ul>
+<p class="muted">
+  README : <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/vecm/README.md"><code>makystats/vecm/README.md</code></a> ·
+  Guide technique : <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/vecm/DOCUMENTATION.md"><code>DOCUMENTATION.md</code></a>
+</p>
+
+<h2>Paramètres (API makystats — pas statsmodels)</h2>
+<table>
+  <tr><th>Paramètre</th><th>Valeurs</th><th>Rôle</th></tr>
+  <tr><td><code>test_case</code></td><td><code>'1'</code>…<code>'5'</code></td><td>Spécification du <strong>test de rang</strong></td></tr>
+  <tr><td><code>det_case</code></td><td><code>'1'</code>…<code>'5b'</code></td><td>Spécification de l’<strong>estimation</strong> (défaut <code>'3a'</code>)</td></tr>
+  <tr><td><code>k_ar_diff</code></td><td>int ≥ 0</td><td>Retards en différences (= ordre VAR en niveau − 1)</td></tr>
+  <tr><td><code>coint_rank</code></td><td>int</td><td>Rang de cointégration r</td></tr>
+</table>
+<p><code>3a</code>/<code>4a</code>/<code>5a</code> = termes duals <strong>JHJ</strong> ; <code>3b</code>/<code>4b</code>/<code>5b</code> = contreparties classiques.</p>
+
+<h2>Workflow minimal</h2>
+<pre><code>order = select_var_order(data, maxlags=4, criterion="bic")
+k_ar_diff = order.best - 1
+summarize_johansen(data, k_ar_diff=k_ar_diff, signif=0.05)
+rank = select_coint_rank(data, k_ar_diff=k_ar_diff, test_case="3")
+model = VECM(data, k_ar_diff=k_ar_diff, coint_rank=max(rank.rank, 1),
+             det_case="3a").fit()
+model.summary()
+print(model.forecast(steps=5, conf_int=True, method="bootstrap", sim_reps=1000))
+model.irf(10).plot()
+model.plot_diagnostics()
+</code></pre>
+
+<h2>Rang : p-values vs valeurs critiques</h2>
+<table>
+  <tr><th>Fonction</th><th>Règle</th></tr>
+  <tr><td><code>select_coint_rank</code></td><td>P-values <strong>MHM</strong> continues</td></tr>
+  <tr><td><code>summarize_johansen</code></td><td>Valeurs critiques <strong>MHM</strong> tabulées</td></tr>
+</table>
+
+<div class="note">
+  Tables MHM incluses dans le paquet. Formules et JHJ :
+  <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/vecm/DOCUMENTATION.md">DOCUMENTATION.md</a>.
+</div>
+<footer>
+  <p>makystats v0.1.4 · Licence MIT ·
+    <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
+    <a href="https://pypi.org/project/makystats/">PyPI</a> ·
+    Auteur : ANDRIANITOVIANA Lauret Boris</p>
+  <p class="muted">Site de documentation uniquement — le code source est dans le dépôt et sur PyPI, pas sur ces pages.</p>
+</footer>
+    </main>
+  </div>
+</div>
+</body>
+</html>

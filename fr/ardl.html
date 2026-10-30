@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>ARDL · makystats</title>
+  <meta name="description" content="makystats documentation"/>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <script src="../js/nav.js" defer></script>
+</head>
+<body>
+<header class="topbar">
+  <button type="button" class="menu-btn" id="menu-btn" aria-controls="sidebar" aria-expanded="true" aria-label="Menu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+  <a class="brand" href="index.html">makystats</a>
+  <a class="ext" href="https://github.com/Lauret-Boris/makystats" rel="noopener">GitHub</a>
+  <a class="ext" href="https://pypi.org/project/makystats/" rel="noopener">PyPI</a>
+  <span class="lang">FR · <a href="../ardl.html">EN</a></span>
+</header>
+<div class="body-row">
+  <aside class="sidebar" id="sidebar">
+    <a class="nav-item" href="index.html">Accueil</a>
+    <a class="nav-item" href="install.html">Installation</a>
+    <div class="nav-group" id="nav-models">
+      <button type="button" class="nav-group-toggle" id="nav-models-toggle" aria-expanded="true" aria-controls="nav-models-items">
+        <span>Modèles</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="nav-group-items" id="nav-models-items">
+      <a class="nav-item" href="arma.html">ARMA</a>
+      <a class="nav-item" href="armagarch.html">ARMA-GARCH</a>
+      <a class="nav-item" href="var.html">VAR</a>
+      <a class="nav-item" href="vecm.html">VECM</a>
+      <a class="nav-item active" href="ardl.html">ARDL</a>
+      </div>
+    </div>
+    <a class="nav-item" href="examples.html">Exemples</a>
+  </aside>
+  <button type="button" class="sidebar-backdrop" id="sidebar-backdrop" aria-label="Close menu"></button>
+  <div class="scroll">
+    <main class="wrap">
+<h1>ARDL</h1>
+<p>Modèles autorégressifs à retards échelonnés : test aux bornes, UECM, ECM restreint,
+coefficients de long terme, CUSUM et prévisions en niveau.</p>
+<p class="muted">
+  README : <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/ardl/README.md"><code>makystats/ardl/README.md</code></a> ·
+  Formules : <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/ardl/DOCUMENTATION.md"><code>DOCUMENTATION.md</code></a>
+</p>
+
+<h2>Estimation et test aux bornes</h2>
+<pre><code>res = ardl(y, x=x, lags=2, order=2, case=3).fit()
+print(res.summary())
+print(res.bounds)
+print(res.long_run_table)
+tab = select_ardl_order(y, x=x, maxlag=4, maxorder=2, case=3, ic="bic")
+</code></pre>
+
+<h2>Cas déterministes</h2>
+<table>
+  <tr><th>case</th><th>Signification</th></tr>
+  <tr><td>1</td><td>Sans constante, sans tendance</td></tr>
+  <tr><td>2</td><td>Constante restreinte</td></tr>
+  <tr><td>3</td><td>Constante non restreinte</td></tr>
+  <tr><td>4</td><td>Tendance restreinte</td></tr>
+  <tr><td>5</td><td>Constante et tendance non restreintes</td></tr>
+</table>
+<p><code>fixed=</code> pour des régresseurs hors relation de cointégration.</p>
+
+<h2>Long terme, ECM restreint, prévisions</h2>
+<pre><code>res.long_run_fitted()
+res.plot_long_run()
+res.restrict_ecm(drop=["D.R.L1"])
+res.restrict_ecm(pvalue=0.10, keep_levels=True)
+
+exog_f = np.full((10, 1), x.iloc[-1])
+fc = res.forecast(steps=10, exog_future=exog_f, conf_int=True)
+fc_e = res.forecast_ecm(steps=10, exog_future=exog_f, restricted=True, level=True)
+</code></pre>
+<p>Le <strong>F aux bornes</strong> reste celui du modèle <strong>non restreint</strong>.</p>
+
+<h2>Diagnostics</h2>
+<pre><code>res.diagnostic_summary(lags_lb=10, nlags_arch=5)
+res.test_normality()
+res.test_heteroskedasticity(5)
+res.test_serial_correlation(10)
+res.plot_diagnostics()
+res.plot_cusum(alpha=0.05)
+</code></pre>
+<footer>
+  <p>makystats v0.1.4 · Licence MIT ·
+    <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
+    <a href="https://pypi.org/project/makystats/">PyPI</a> ·
+    Auteur : ANDRIANITOVIANA Lauret Boris</p>
+  <p class="muted">Site de documentation uniquement — le code source est dans le dépôt et sur PyPI, pas sur ces pages.</p>
+</footer>
+    </main>
+  </div>
+</div>
+</body>
+</html>

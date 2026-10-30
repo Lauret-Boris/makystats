@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>ARDL · makystats</title>
+  <meta name="description" content="makystats documentation"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <script src="js/nav.js" defer></script>
+</head>
+<body>
+<header class="topbar">
+  <button type="button" class="menu-btn" id="menu-btn" aria-controls="sidebar" aria-expanded="true" aria-label="Menu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+  <a class="brand" href="index.html">makystats</a>
+  <a class="ext" href="https://github.com/Lauret-Boris/makystats" rel="noopener">GitHub</a>
+  <a class="ext" href="https://pypi.org/project/makystats/" rel="noopener">PyPI</a>
+  <span class="lang"><a href="fr/ardl.html">FR</a> · EN</span>
+</header>
+<div class="body-row">
+  <aside class="sidebar" id="sidebar">
+    <a class="nav-item" href="index.html">Home</a>
+    <a class="nav-item" href="install.html">Install</a>
+    <div class="nav-group" id="nav-models">
+      <button type="button" class="nav-group-toggle" id="nav-models-toggle" aria-expanded="true" aria-controls="nav-models-items">
+        <span>Models</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="nav-group-items" id="nav-models-items">
+      <a class="nav-item" href="arma.html">ARMA</a>
+      <a class="nav-item" href="armagarch.html">ARMA-GARCH</a>
+      <a class="nav-item" href="var.html">VAR</a>
+      <a class="nav-item" href="vecm.html">VECM</a>
+      <a class="nav-item active" href="ardl.html">ARDL</a>
+      </div>
+    </div>
+    <a class="nav-item" href="examples.html">Examples</a>
+  </aside>
+  <button type="button" class="sidebar-backdrop" id="sidebar-backdrop" aria-label="Close menu"></button>
+  <div class="scroll">
+    <main class="wrap">
+<h1>ARDL</h1>
+<p>Autoregressive distributed lag models: bounds test, UECM, restricted ECM,
+long-run coefficients, CUSUM stability and level forecasts.</p>
+<p class="muted">
+  README: <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/ardl/README.md"><code>makystats/ardl/README.md</code></a> ·
+  Formulas: <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/ardl/DOCUMENTATION.md"><code>DOCUMENTATION.md</code></a>
+</p>
+
+<h2>Import</h2>
+<pre><code>from makystats import ardl, select_ardl_order
+</code></pre>
+
+<h2>Fit and bounds test</h2>
+<pre><code>res = ardl(y, x=x, lags=2, order=2, case=3).fit()
+print(res.summary())
+print(res.bounds)            # Pesaran / Narayan F and t
+print(res.long_run_table)
+
+# Order selection
+tab = select_ardl_order(y, x=x, maxlag=4, maxorder=2, case=3, ic="bic")
+# Per-variable maxorder: maxorder={"R": 2, "oil": 1}
+</code></pre>
+
+<h2>Cases (deterministic)</h2>
+<table>
+  <tr><th>case</th><th>Meaning</th></tr>
+  <tr><td>1</td><td>No constant, no trend</td></tr>
+  <tr><td>2</td><td>Restricted constant</td></tr>
+  <tr><td>3</td><td>Unrestricted constant</td></tr>
+  <tr><td>4</td><td>Restricted trend</td></tr>
+  <tr><td>5</td><td>Unrestricted constant and trend</td></tr>
+</table>
+<p><code>fixed=</code> regressors may be placed outside the cointegrating relation.</p>
+
+<h2>Long run and plots</h2>
+<pre><code>df_lr = res.long_run_fitted()   # y, fitted_lr (y*), ect
+res.plot_long_run()
+res.plot_long_run_fitted()
+</code></pre>
+
+<h2>Restricted ECM</h2>
+<p>Careful removal of coefficients (often insignificant).
+General-to-specific selection implies pre-test bias.
+The <strong>bounds F</strong> remains that of the <strong>unrestricted</strong> model.</p>
+<pre><code>res.restrict_ecm(drop=["D.R.L1"])
+res.restrict_ecm(pvalue=0.10, keep_levels=True)  # protects α and x.L1
+</code></pre>
+
+<h2>Forecasts</h2>
+<p>Conditional on future paths of <code>x</code> (required if the model has exogenous regressors).</p>
+<pre><code>exog_f = np.full((10, 1), x.iloc[-1])
+
+fc = res.forecast(steps=10, exog_future=exog_f, conf_int=True)
+
+res.restrict_ecm(drop=["D.R.L1"])
+fc_e = res.forecast_ecm(
+    steps=10, exog_future=exog_f, restricted=True, level=True, conf_int=True
+)
+</code></pre>
+<table>
+  <tr><th>Method</th><th>Content of forecast</th></tr>
+  <tr><td><code>forecast(...)</code></td><td>Levels (ARDL)</td></tr>
+  <tr><td><code>forecast_ecm(..., level=True)</code></td><td>Levels (default)</td></tr>
+  <tr><td><code>forecast_ecm(..., level=False)</code></td><td>Differences Δy</td></tr>
+</table>
+
+<h2>Results (after <code>fit</code>)</h2>
+<table>
+  <tr><th>Attribute / method</th><th>Content</th></tr>
+  <tr><td><code>params</code>, <code>coef</code>, <code>coefficients</code></td><td>ARDL coefficient Series</td></tr>
+  <tr><td><code>bse</code>, <code>pvalues</code>, <code>tvalues</code></td><td>Inference</td></tr>
+  <tr><td><code>coef_table</code></td><td>Coeff / Std.Err / t / Prob.</td></tr>
+  <tr><td><code>cov_params()</code></td><td>OLS covariance</td></tr>
+  <tr><td><code>conf_int(alpha=0.05)</code></td><td>Coefficient CIs</td></tr>
+  <tr><td><code>aic</code>, <code>bic</code>, <code>hqic</code>, <code>llf</code></td><td>ICs and log-likelihood</td></tr>
+  <tr><td><code>nobs</code>, <code>df_model</code>, <code>df_resid</code>, <code>sigma2</code></td><td>Sizes and variance</td></tr>
+  <tr><td><code>rsquared</code>, <code>rsquared_adj</code></td><td>Fit quality</td></tr>
+  <tr><td><code>residuals</code>, <code>fitted_values</code></td><td>Indexed series</td></tr>
+  <tr><td><code>long_run</code>, <code>long_run_table</code></td><td>Long-run multipliers</td></tr>
+</table>
+
+<h2>Diagnostics</h2>
+<pre><code>res.diagnostic_summary(lags_lb=10, nlags_arch=5)
+res.test_normality()
+res.test_heteroskedasticity(5)
+res.test_serial_correlation(10)
+res.plot_diagnostics()
+res.plot_cusum(alpha=0.05)   # alpha=0.05 or 0.10
+</code></pre>
+<footer>
+  <p>makystats v0.1.4 · MIT License ·
+    <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
+    <a href="https://pypi.org/project/makystats/">PyPI</a> ·
+    Author: ANDRIANITOVIANA Lauret Boris</p>
+  <p class="muted">Documentation site only — source code lives in the repository and on PyPI, not on these pages.</p>
+</footer>
+    </main>
+  </div>
+</div>
+</body>
+</html>
