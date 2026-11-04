@@ -11,18 +11,18 @@
 [![GitHub last commit](https://img.shields.io/github/last-commit/Lauret-Boris/makystats)](https://github.com/Lauret-Boris/makystats/commits/main)
 [![Downloads](https://img.shields.io/pypi/dm/makystats)](https://pypi.org/project/makystats/)
 
-**Econometrics toolkit for Python** — ARMA (constant variance), ARMA–GARCH (MLE), VAR (native OLS), VECM / Johansen, and **ARDL** (bounds test, ECM, forecasts).
+**Econometrics toolkit for Python** — ARMA (constant variance), ARMA–GARCH (MLE), VAR (native OLS), VECM / Johansen, **ARDL** (bounds test, ECM, forecasts), and **unit-root / stationarity tests** (ADF, sequential ADF, KPSS, PP, DF-GLS, ZA, Engle–Granger).
 
 | | |
 |---|---|
 | **Install** | `pip install makystats` |
 | **Python** | >= 3.9 (tested up to 3.14) |
 | **License** | MIT |
-| **Version** | 0.1.4 |
+| **Version** | 0.1.5 |
 
 **Documentation:** [Online user guide (EN/FR)](https://Lauret-Boris.github.io/makystats/).
 
-Full technical guides: [VECM](https://github.com/Lauret-Boris/makystats/blob/main/makystats/vecm/DOCUMENTATION.md), [VAR](https://github.com/Lauret-Boris/makystats/blob/main/makystats/var_model/README.md), [ARMA-GARCH](https://github.com/Lauret-Boris/makystats/blob/main/makystats/armagarch/DOCUMENTATION.md), [ARMA](https://github.com/Lauret-Boris/makystats/blob/main/makystats/arma/README.md), [ARDL](https://github.com/Lauret-Boris/makystats/blob/main/makystats/ardl/DOCUMENTATION.md) (also shipped inside the installed package).
+Full technical guides: [VECM](https://github.com/Lauret-Boris/makystats/blob/main/makystats/vecm/DOCUMENTATION.md), [VAR](https://github.com/Lauret-Boris/makystats/blob/main/makystats/var_model/README.md), [ARMA-GARCH](https://github.com/Lauret-Boris/makystats/blob/main/makystats/armagarch/DOCUMENTATION.md), [ARMA](https://github.com/Lauret-Boris/makystats/blob/main/makystats/arma/README.md), [ARDL](https://github.com/Lauret-Boris/makystats/blob/main/makystats/ardl/DOCUMENTATION.md), [stationarity / unit-root](https://github.com/Lauret-Boris/makystats/blob/main/makystats/stationarity_test/README.md) (also shipped inside the installed package).
 
 *Version française :* [`README.fr.md`](https://github.com/Lauret-Boris/makystats/blob/main/README.fr.md).
 
@@ -64,12 +64,26 @@ Full technical guides: [VECM](https://github.com/Lauret-Boris/makystats/blob/mai
 - MacKinnon–Haug–Michelis (1999) continuous p-values and critical values
 - Native multi-step forecasts (`variables=` filter), IRF, FEVD, diagnostics
 
+**ARDL (`makystats.ardl`)**
+
+- Native OLS ARDL, UECM, long-run multipliers, Pesaran / Narayan bounds test, ECM
+- Cases 1–5 (PSS deterministics); CUSUM; conditional forecasts and restricted ECM
+- Order selection via `select_ardl_order`; helpers `fit_from_ardl_order_table`
+
+**Unit-root / stationarity (`makystats.stationarity_test`)**
+
+- Native **ADF** (MacKinnon), **KPSS**, **Phillips–Perron** (Z(τ) / Z(ρ)), **DF-GLS** (ERS), **Zivot–Andrews**, **Engle–Granger**
+- **Sequential ADF** strategy (models 3→2→1, Φ joint tests, decision-tree plot)
+- Inspectable OLS tables (`.ols` / `.regression.summary()`), multi-spec compares, plots
+- Guide: [`makystats/stationarity_test/README.md`](https://github.com/Lauret-Boris/makystats/blob/main/makystats/stationarity_test/README.md)
+
 ---
 
-## Release 0.1.4
+## Release 0.1.5
 
-- **ARDL**: ECM short-run intercept for PSS cases 3–5 (case 4 = unrestricted constant + restricted trend); Bardsen/UECM exact for `order=0` (`Δx` term); bounds SSR consistent with the ARDL reparameterisation.
-- Notebooks under `exemples/ARDL/` split `summary()`, `summary_uecm()` + `summary_bounds()`, and `summary_ecm()`.
+- **Stationarity suite**: richer KPSS / PP / DF-GLS / ZA APIs (OLS summaries, compares, plots); sequential ADF with Φ tests and path plot; DF-GLS MAIC and Perron–Qu lag policy; ADF index preservation.
+- **Documentation**: expanded `stationarity_test` README; main guides and site version badges updated to 0.1.5.
+- (0.1.4) ARDL ECM intercept for PSS cases 3–5; UECM exact for `order=0`; notebook summary layout.
 
 ## Installation
 
@@ -103,6 +117,7 @@ Table of contents:
 | [VECM reference](#vecm-reference) | Parameters, API, JHJ, forecasts, diagnostics |
 | [Quick start — ARMA](#quick-start--arma) | Homoskedastic ARMA |
 | [Quick start — ARDL](#quick-start--ardl) | Bounds test, ECM, forecasts |
+| [Quick start — unit-root tests](#quick-start--unit-root--stationarity-tests) | ADF, sequential ADF, KPSS, PP, DF-GLS, ZA |
 | [Quick start — ARMA–GARCH](#quick-start--arma-garch) | Fit, order selection |
 | [§1–§8](#1-statistical-model) | Full ARMA–GARCH technical guide |
 
@@ -627,4 +642,4 @@ python -m pytest tests/ -q
 
 ## License
 
-MIT. Version **0.1.4**.
+MIT. Version **0.1.5**.
