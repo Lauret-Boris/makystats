@@ -361,8 +361,8 @@ makystats / JHJ). Indépendant de `method`.
 | `'gaussian'` | \(N(0,\Sigma_u)\) | percentiles empiriques |
 
 Sous normalité et `sim_reps` grand, simulation ≈ analytique. Résidus non
-gaussiens : préférer `'bootstrap'` (proche de la simulation EViews pour les
-SE de forecast). Alias : `'eviews'`/`'simulation'` → bootstrap ;
+gaussiens : préférer `'bootstrap'` (simulation des résidus pour les
+SE de forecast). Alias : `'simulation'` → bootstrap ;
 `'mc'`/`'normal'` → gaussian.
 
 **`plot_forecast`** natif (matplotlib), mêmes options `method` / `sim_reps` / `variables`.
@@ -572,7 +572,7 @@ pv = mhm_pvalue(18.5, npr=2, test='trace', case='2')
 6. **Prévision** : **native** makystats (récursion JHJ, IC analytiques ou
    par simulation `bootstrap` / `gaussian`). Les paramètres restent fixés
    dans les IC (incertitude d’estimation de α, β, Γ non rejouée — comme la
-   MSE asymptotique classique et la simulation de forecast SE type EViews
+   MSE asymptotique classique et la simulation de forecast SE
    à coefficients fixés).
 7. **Identification de β** : une normalisation (première composante = 1) ;
    les rotations dans l’espace de cointégration pour \(r > 1\) ne sont pas
