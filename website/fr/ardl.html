@@ -35,6 +35,15 @@
       <a class="nav-item active" href="ardl.html">ARDL</a>
       </div>
     </div>
+    <div class="nav-group" id="nav-tests">
+      <button type="button" class="nav-group-toggle" id="nav-tests-toggle" aria-expanded="true" aria-controls="nav-tests-items">
+        <span>Tests</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="nav-group-items" id="nav-tests-items">
+      <a class="nav-item" href="stationarity.html">Stationnarité</a>
+      </div>
+    </div>
     <a class="nav-item" href="examples.html">Exemples</a>
   </aside>
   <button type="button" class="sidebar-backdrop" id="sidebar-backdrop" aria-label="Close menu"></button>
@@ -88,7 +97,7 @@ res.plot_diagnostics()
 res.plot_cusum(alpha=0.05)
 </code></pre>
 <footer>
-  <p>makystats v0.1.4 · Licence MIT ·
+  <p>makystats v0.1.5 · Licence MIT ·
     <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
     <a href="https://pypi.org/project/makystats/">PyPI</a> ·
     Auteur : ANDRIANITOVIANA Lauret Boris</p>
