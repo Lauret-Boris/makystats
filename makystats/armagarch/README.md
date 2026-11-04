@@ -31,6 +31,29 @@ from makystats import arma_garch, select_order, ARMAGarch
 
 ---
 
+
+---
+
+## ARIMA-GARCH (`d`)
+
+Pour une série **en niveau** souvent I(1), sans différencier à la main :
+
+```python
+res = arma_garch(prices, mean='Constant', vol='GARCH', p=1, q=1, d=1).fit()
+fc = res.forecast(h=10)
+print(fc[['mean', 'mean_diff', 'mean_level', 'vol']])
+```
+
+| | |
+|--|--|
+| `d=0` (défaut) | ARMA-GARCH classique (rendements / série stationnaire) |
+| `d=1` ou `2` | Différenciation interne ; GARCH estimé sur Δ^d y |
+| `mean` / `vol` | Toujours sur l’échelle **Δ^d** |
+| `forecast` | `mean` = échelle d’estimation ; **`mean_level`** = niveaux reconstitués |
+| VaR | Sur l’échelle d’estimation (Δ^d), pas en niveau |
+
+Éviter de combiner `d>0` avec `transform='logdiff'` sauf intention claire.
+
 ## Workflow minimal
 
 Après `fit()`, **`y` et `x` sont mémorisés** (`res._y`, `res._x_user`) :
@@ -58,6 +81,14 @@ res0 = arma_garch(y, mean='Zero', ar=1, ma=1, vol='GARCH').fit()
 tab = select_order(y, p_range=range(0, 3), q_range=range(0, 3),
                    criterion='bic', n_jobs=1)
 print(tab.attrs['best'])
+
+# d et saisonnalité fixes pour toute la grille
+tab = select_order(
+    ylog, p_range=range(0, 3), q_range=range(0, 2),
+    r_range=[1], s_range=[1], d=1,
+    seasonal_order=(0, 1, 1, 12), criterion='aic',
+)
+tab, best = select_order(..., return_best=True)  # best refitté sur y original
 ```
 
 ---
@@ -85,7 +116,9 @@ Identité du filtre : `y = fitted_values + residuals`.
 | `vol` | `GARCH`, `ARCH`, `GJR`/`TARCH`, `EGARCH`, `APARCH`, `FIGARCH` |
 | `dist` | `normal`, `t`, `skewt`, `ged` |
 | `ar` / `ma` | ordres ou listes de lags (ex. `[1, 3]`, `ma=[5]`) |
-| `r` / `s` ou `p` / `q` | ordres ARCH / GARCH |
+| `r` / `s` ou `p` / `q` | ordres ARCH / GARCH (`r=s=0` → variance constante) |
+| `d` | différences régulières 0, 1 ou 2 (ARIMA-GARCH) |
+| `seasonal_order` | `(P, D, Q, s)` saison **additive** (lags `k·s` + diff `D`) |
 | `o` | ordre d’asymétrie (GJR / EGARCH / APARCH) |
 | `backcast` | λ pré-échantillon variance (souvent `0.7`) |
 | `adjust_sample` | `True` : burn-in hors LL ; `False` : échantillon complet |
@@ -120,7 +153,7 @@ res = arma_garch(y, x=x.values, mean="LS", vol="GARCH").fit(
 
 ```python
 res = arma_garch(y, mean="AR", ar=1, ma=1, vol="GARCH", in_mean="var").fit()
-# in_mean: None | "sigma" | "var" (EViews Variance) | "log"
+# in_mean: None | "sigma" | "var" (forme variance) | "log"
 # coefficient label: archm (λ)
 ```
 

@@ -110,7 +110,7 @@ consécutifs \(\{1,\ldots,p\}\) ou **creux** (ex. `ma=[5]` : un seul MA au retar
 
 #### Termes déterministes (`trend`)
 
-Paramètre ``trend`` ∈ {``'n'``, ``'c'``, ``'t'``, ``'ct'``} (convention EViews / statsmodels) :
+Paramètre ``trend`` ∈ {``'n'``, ``'c'``, ``'t'``, ``'ct'``} (convention statsmodels) :
 
 | Valeur | Constante \(c\) | Tendance \(\delta\,\tau_t\) | Labels dans `coef_table` |
 |--------|-----------------|-------------------------------|---------------------------|
@@ -437,7 +437,7 @@ res = arma_garch(y, mean='ARMA', ar=1, ma=1, vol='EGARCH',
 # HAR–GARCH
 res = arma_garch(y, mean='HAR', lags=[1, 5, 22], vol='GARCH').fit()
 
-# GARCH-M (ARCH-M variance, style EViews)
+# GARCH-M (ARCH-M, forme en variance)
 res = arma_garch(y, mean='AR', ar=1, ma=1, vol='GARCH', in_mean='var').fit()
 print(res.coef_table.loc['archm'])
 
@@ -516,7 +516,7 @@ y_t = \mu_t + \mathrm{ARMA}(y,\varepsilon) + \mathbf{x}_t'\boldsymbol{\beta}
 f \in \{\sigma_t,\,\sigma_t^2,\,\ln\sigma_t^2\}.
 \]
 
-| `in_mean` | \(f(\sigma_t)\) | Équivalent EViews | Label coef |
+| `in_mean` | \(f(\sigma_t)\) | Interprétation | Label coef |
 |-----------|----------------|-------------------|------------|
 | `None` (défaut) | — | pas d'ARCH-M | — |
 | `'sigma'` | \(\sigma_t\) | Std. Dev. | `archm` |
