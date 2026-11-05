@@ -21,6 +21,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Pin nbviewer links to this commit
+        run: python3 scripts/pin_nbviewer.py --src website --in-place --sha "${{ github.sha }}"
       - name: Checkout
         uses: actions/checkout@v4
 
