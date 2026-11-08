@@ -83,6 +83,25 @@ tab = select_ardl_order(y, x=x, maxlag=4, maxorder=2, case=3, ic="bic")
 </table>
 <p><code>fixed=</code> regressors may be placed outside the cointegrating relation.</p>
 
+<h2>Main arguments</h2>
+<table>
+  <tr><th>Argument</th><th>Role</th></tr>
+  <tr><td><code>y</code>, <code>x</code></td><td>Dependent series and exogenous regressors (DataFrame / Series)</td></tr>
+  <tr><td><code>lags</code></td><td>Lags of <code>y</code> (int)</td></tr>
+  <tr><td><code>order</code></td><td>Lags of each column of <code>x</code>: int, list, or dict per variable</td></tr>
+  <tr><td><code>case</code></td><td>PSS deterministic case 1–5 (preferred over raw <code>trend</code>)</td></tr>
+  <tr><td><code>trend</code></td><td>Legacy deterministics if <code>case</code> is omitted</td></tr>
+  <tr><td><code>fixed</code></td><td>Regressors outside the long-run relation</td></tr>
+</table>
+<table>
+  <tr><th><code>select_ardl_order</code></th><th>Role</th></tr>
+  <tr><td><code>maxlag</code>, <code>maxorder</code></td><td>Search ranges for y-lags and x-orders (int or dict)</td></tr>
+  <tr><td><code>case</code></td><td>Fixed PSS case for the grid</td></tr>
+  <tr><td><code>ic</code></td><td><code>aic</code> / <code>bic</code> / <code>hqic</code></td></tr>
+  <tr><td><code>return_best</code></td><td>Also return a fitted model for the top order</td></tr>
+</table>
+
+
 <h2>Long run and plots</h2>
 <pre><code>df_lr = res.long_run_fitted()   # y, fitted_lr (y*), ect
 res.plot_long_run()
@@ -139,7 +158,7 @@ res.plot_diagnostics()
 res.plot_cusum(alpha=0.05)   # alpha=0.05 or 0.10
 </code></pre>
 <footer>
-  <p>makystats v0.1.5 · MIT License ·
+  <p>makystats v0.1.6 · MIT License ·
     <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
     <a href="https://pypi.org/project/makystats/">PyPI</a> ·
     Author: ANDRIANITOVIANA Lauret Boris</p>

@@ -97,9 +97,54 @@ print(unit_root_summary(y))
   <tr><td>Engle–Granger</td><td>no cointegration</td><td>two series</td></tr>
 </table>
 
+<h2>Main parameters</h2>
+<table>
+  <tr><th>Function</th><th>Key arguments</th></tr>
+  <tr>
+    <td><code>adf(y, …)</code></td>
+    <td><code>regression</code> = <code>n</code> / <code>c</code> / <code>ct</code> ·
+        <code>maxlag</code> · <code>autolag</code> = <code>AIC</code> / <code>BIC</code> / <code>None</code>
+        (lag IC on a <strong>common sample</strong>)</td>
+  </tr>
+  <tr>
+    <td><code>adf_sequential(y, …)</code></td>
+    <td><code>maxlag</code> · <code>autolag</code> · <code>alpha</code> (default 0.05) —
+        lag chosen on Model 3, then path 3→2→1 with Φ tests</td>
+  </tr>
+  <tr>
+    <td><code>kpss(y, …)</code></td>
+    <td><code>regression</code> = <code>c</code> / <code>ct</code> · <code>nlags</code> = <code>auto</code> or int</td>
+  </tr>
+  <tr>
+    <td><code>pp(y, …)</code></td>
+    <td><code>regression</code> = <code>n</code> / <code>c</code> / <code>ct</code> · <code>lags</code> = <code>auto</code> or int</td>
+  </tr>
+  <tr>
+    <td><code>dfgls(y, …)</code></td>
+    <td><code>regression</code> = <code>c</code> / <code>ct</code> · <code>maxlag</code> ·
+        <code>autolag</code> = <code>AIC</code> / <code>BIC</code> / <code>MAIC</code></td>
+  </tr>
+  <tr>
+    <td><code>za(y, …)</code></td>
+    <td><code>regression</code> = <code>c</code> / <code>t</code> / <code>ct</code> (break type) ·
+        <code>trim</code> (default 0.15) · <code>maxlag</code> · <code>autolag</code> ·
+        <code>lag_policy</code> = <code>per_break</code> / <code>global</code></td>
+  </tr>
+  <tr>
+    <td><code>engle_granger(y, x, …)</code></td>
+    <td>Cointegration residual ADF; see module README for options</td>
+  </tr>
+</table>
+
+<p>
+  Result objects expose <code>.summary()</code>, and where applicable
+  <code>.ols</code> / <code>.regression.summary()</code> for the underlying ADF-type regression.
+  Sequential ADF: <code>seq.adf_model(3)</code>, joint Φ via path objects,
+  <code>seq.plot()</code> for the decision tree.
+</p>
 <p>
   Helpers: <code>kpss_compare</code>, <code>pp_compare</code>, <code>dfgls_compare</code>,
-  <code>za_compare</code>, <code>adf_joint_test</code>.
+  <code>za_compare</code>, <code>adf_joint_test</code>, <code>unit_root_summary</code>.
 </p>
 
 <h2>Example notebook</h2>
@@ -111,7 +156,7 @@ print(unit_root_summary(y))
 </p>
 
 <footer>
-  <p>makystats v0.1.5 · MIT License ·
+  <p>makystats v0.1.6 · MIT License ·
     <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
     <a href="https://pypi.org/project/makystats/">PyPI</a> ·
     Author: ANDRIANITOVIANA Lauret Boris</p>
