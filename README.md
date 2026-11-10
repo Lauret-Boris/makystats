@@ -18,7 +18,7 @@
 | **Install** | `pip install makystats` |
 | **Python** | >= 3.9 (tested up to 3.14) |
 | **License** | MIT |
-| **Version** | 0.1.5 |
+| **Version** | 0.1.7 |
 
 **Documentation:** [Online user guide (EN/FR)](https://Lauret-Boris.github.io/makystats/).
 
@@ -79,11 +79,20 @@ Full technical guides: [VECM](https://github.com/Lauret-Boris/makystats/blob/mai
 
 ---
 
-## Release 0.1.5
+## Release 0.1.7
 
-- **Stationarity suite**: richer KPSS / PP / DF-GLS / ZA APIs (OLS summaries, compares, plots); sequential ADF with Φ tests and path plot; DF-GLS MAIC and Perron–Qu lag policy; ADF index preservation.
-- **Documentation**: expanded `stationarity_test` README; main guides and site version badges updated to 0.1.5.
-- (0.1.4) ARDL ECM intercept for PSS cases 3–5; UECM exact for `order=0`; notebook summary layout.
+- **ARDL bounds test**: F-statistic is the **Wald / q** test on ARDL coefficients (H0: Σφ = 1, Σβ_j = 0; case 2 also restricts const; case 4 also restricts trend). Matches Conditional-EC software output; valid with `order=0`.
+- **ARDL long-run display**: `res.long_run` / `long_run_table` show **cointegrating equation only** (restricted deterministics + x). Full levels multipliers are in `res.long_run_levels` / `long_run_levels_table`.
+- **ARDL ECM**: mixed dating for `order=0` (level contemporaneous in CE, no separate `D.x.L0`); unrestricted const/trend placement by PSS case; UECM↔ECM algebraic identity.
+- **`restrict_ecm`**: empty drop returns Bardsen (unrestricted) coefficients; free OLS only when terms are removed; α protected unless `force_drop_alpha=True`.
+- **Plots**: `plot_long_run_fitted` (y vs levels equilibrium + ECT); PeriodIndex-safe x-axis.
+- **Docs / site**: version badges and ARDL guides updated to 0.1.7.
+
+### Earlier releases
+
+- **0.1.6** — ARMA–GARCH free AR/MA (inverted roots); `nonneg_var` / `stationary_var`; APARCH/FIGARCH forecast recursion; `res.optimization`; ADF lag selection on a common sample.
+- **0.1.5** — Stationarity suite (KPSS / PP / DF-GLS / ZA APIs, sequential ADF, MAIC / Perron–Qu); expanded `stationarity_test` README.
+- **0.1.4** — ARDL ECM intercept for PSS cases 3–5; UECM exact for `order=0`; notebook summary layout.
 
 ## Installation
 
@@ -425,7 +434,7 @@ so that the printed equation matches the non-centred writing
 
 Likelihood and other coefficients are unchanged.
 
-**Sign restrictions.** For multi-lag GARCH, individual α_k, β_ℓ are **not** forced positive (only ω > 0 via exp); negative coefficients remain admissible provided σ_t² stays positive in the filter (clamped only for numerical safety). This matches unrestricted ML practice when higher-order lag polynomials are used. GJR γ is free; APARCH γ is mapped to (−1, 1) via tanh; FIGARCH d is soft-bounded for stability.
+**Sign restrictions.** By default, multi-lag GARCH individual α_k, β_ℓ are **not** forced positive (only ω > 0 via exp); negative coefficients remain admissible provided σ_t² stays positive in the filter (clamped only for numerical safety). This matches unrestricted ML practice and EViews. Set ``nonneg_var=True`` on ``arma_garch`` / ``ARMAGarch`` to force **α ≥ 0**, **β ≥ 0** via an ``exp`` reparameterisation (arch-like constrained behaviour). Set ``stationary_var=True`` to enforce persistence strictly below one: ``sum(α)+sum(β)<1`` (GARCH); ``sum(α)+½sum(γ)+sum(β)<1`` (GJR/TARCH, γ scaled if needed); APARCH uses a ``sum(α)+sum(β)<1`` proxy only. Both flags can be combined. After ``fit()``, ``res.optimization``, ``res.converged`` and ``res.fit_result`` expose BFGS diagnostics. APARCH γ is mapped to (−1, 1) via tanh; FIGARCH d is soft-bounded (with ``nonneg_var``, FIGARCH β ≥ 0).
 
 ### 1.3 Innovation distributions
 
@@ -603,19 +612,51 @@ In-process documentation: `help(arma_garch)`, `help(ARMAGarch.fit)`, `help(selec
 
 ```text
 makystats/
-  __init__.py           # public exports
-  armagarch/            # ARMA–GARCH family (MLE)
+  __init__.py                 # public API (arma, arma_garch, VAR, VECM, ardl, …)
+  arma/                       # ARMA / ARIMA mean (constant variance, MLE)
+    __init__.py
+    core.py
+    README.md
+  armagarch/                  # ARMA–GARCH family (joint MLE)
     __init__.py
     core.py
     README.md
     DOCUMENTATION.md
-  vecm/                 # VECM / Johansen cointegration
+  ardl/                       # ARDL, UECM, bounds test, ECM
+    __init__.py
+    core.py
+    critical_values.py
+    README.md
+    DOCUMENTATION.md
+  var_model/                  # VAR (OLS)
+    __init__.py
+    core.py
+    README.md
+  vecm/                       # VECM / Johansen cointegration
     __init__.py
     core.py
     vecm_model.py
-    mhm_tables.npz
+    mhm_tables.npz            # MHM (1999) tables
     README.md
     DOCUMENTATION.md
+  stationarity_test/          # unit-root / stationarity tests
+    __init__.py
+    core.py
+    README.md
+  stationarity/               # deprecated alias → stationarity_test
+    __init__.py
+```
+
+Supporting folders (repository root):
+
+```text
+tests/                        # pytest suite (ARMA, GARCH, ARDL, VAR, VECM, stationarity, …)
+exemples/                     # notebooks by topic (ARMA, ARMA_GARCH, ARDL, stationarity, pipelines, …)
+website/                      # GitHub Pages user guide (EN/FR)
+docs/                         # formula images for README (not the Pages root)
+pyproject.toml
+README.md
+README.fr.md
 ```
 
 ```bash
@@ -637,9 +678,15 @@ python -m pytest tests/ -q
 - Johansen, S. (1995), *Likelihood-Based Inference in Cointegrated Vector Autoregressive Models*.
 - MacKinnon, J. G., Haug, A. A., & Michelis, L. (1999), Numerical distribution functions of likelihood ratio tests for cointegration, *Journal of Applied Econometrics*.
 - Lütkepohl, H. (2005), *New Introduction to Multiple Time Series Analysis*.
+- Pesaran, M. H., Shin, Y., & Smith, R. J. (2001), Bounds testing approaches to the analysis of level relationships, *Journal of Applied Econometrics* (ARDL).
+- Dickey, D. A., & Fuller, W. A. (1979), Distribution of the estimators for autoregressive time series with a unit root, *Journal of the American Statistical Association* (ADF).
+- Kwiatkowski, D., Phillips, P. C. B., Schmidt, P., & Shin, Y. (1992), Testing the null hypothesis of stationarity against the alternative of a unit root, *Journal of Econometrics* (KPSS).
+- Phillips, P. C. B., & Perron, P. (1988), Testing for a unit root in time series regression, *Biometrika* (PP).
+- Elliott, G., Rothenberg, T. J., & Stock, J. H. (1996), Efficient tests for an autoregressive unit root, *Econometrica* (DF-GLS).
+- Zivot, E., & Andrews, D. W. K. (1992), Further evidence on the great crash, the oil-price shock, and the unit-root hypothesis, *Journal of Business & Economic Statistics* (ZA).
 
 ---
 
 ## License
 
-MIT. Version **0.1.5**.
+MIT. Version **0.1.7**.

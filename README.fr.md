@@ -58,11 +58,20 @@ Générées depuis le dossier `website/` (GitHub Pages). Le dossier `docs/` du d
 Guides techniques complets : [VECM](https://github.com/Lauret-Boris/makystats/blob/main/makystats/vecm/DOCUMENTATION.md), [VAR](https://github.com/Lauret-Boris/makystats/blob/main/makystats/var_model/README.md), [ARMA-GARCH](https://github.com/Lauret-Boris/makystats/blob/main/makystats/armagarch/DOCUMENTATION.md), [ARMA](https://github.com/Lauret-Boris/makystats/blob/main/makystats/arma/README.md), [ARDL](https://github.com/Lauret-Boris/makystats/blob/main/makystats/ardl/DOCUMENTATION.md), [stationnarité / racines unitaires](https://github.com/Lauret-Boris/makystats/blob/main/makystats/stationarity_test/README.md) (aussi livrés dans le paquet installé).
 
 
-## Version 0.1.5
+## Version 0.1.7
 
-- **Stationnarité** : API enrichie pour KPSS, Phillips–Perron, DF-GLS, ZA (OLS, comparaisons multi-specs, graphiques) ; ADF séquentiel (tests Φ, arbre) ; MAIC et politique de retards Perron–Qu pour le DF-GLS.
-- **Documentation** : README `stationarity_test` étendu ; badges et guides alignés sur la 0.1.5.
-- (0.1.4) ARDL : intercept de court terme de l'ECM pour les cas PSS 3–5 ; UECM exact pour `order=0` ; notebooks `exemples/ARDL/`.
+- **Test aux bornes ARDL** : statistique F = **Wald / q** sur les coefficients ARDL (H0 : Σφ = 1, Σβ_j = 0 ; case 2 restreint aussi const ; case 4 aussi trend). Aligné sur les sorties Conditional-EC ; valide avec `order=0`.
+- **Long terme ARDL** : `res.long_run` / `long_run_table` = **équation de cointégration seule** (déterministes restreints + x). Multiplicateurs levels complets : `res.long_run_levels` / `long_run_levels_table`.
+- **ECM ARDL** : datation mixte pour `order=0` (niveau contemporain dans le CE, pas de `D.x.L0` séparé) ; placement const/trend selon le case PSS ; identité UECM↔ECM.
+- **`restrict_ecm`** : sans retrait → coefficients Bardsen ; OLS libre seulement si des termes sont retirés ; α protégé sauf `force_drop_alpha=True`.
+- **Graphiques** : `plot_long_run_fitted` (y vs équilibre levels + ECT) ; axe compatible PeriodIndex.
+- **Documentation / site** : badges et guides ARDL en 0.1.7.
+
+### Versions antérieures
+
+- **0.1.6** — ARMA–GARCH AR/MA libres (racines inverses) ; `nonneg_var` / `stationary_var` ; prévisions APARCH/FIGARCH ; `res.optimization` ; retards ADF sur échantillon commun.
+- **0.1.5** — Suite de stationnarité (KPSS / PP / DF-GLS / ZA, ADF séquentiel, MAIC / Perron–Qu).
+- **0.1.4** — Intercept ECM ARDL (cas PSS 3–5) ; UECM exact pour `order=0`.
 
 
 ## Installation
@@ -404,15 +413,48 @@ Documentation intégrée : `help(arma_garch)`, `help(ARMAGarch.fit)`, `help(sele
 
 ```text
 makystats/
-  __init__.py
-  armagarch/            # ARMA–GARCH (MLE)
+  __init__.py                 # API publique (arma, arma_garch, VAR, VECM, ardl, …)
+  arma/                       # ARMA / ARIMA (variance constante, MLE)
     __init__.py
     core.py
-  vecm/                 # VECM / Johansen
+    README.md
+  armagarch/                  # famille ARMA–GARCH (MLE conjoint)
     __init__.py
     core.py
-tests/
-examples/
+    README.md
+    DOCUMENTATION.md
+  ardl/                       # ARDL, UECM, test des bornes, ECM
+    __init__.py
+    core.py
+    critical_values.py
+    README.md
+    DOCUMENTATION.md
+  var_model/                  # VAR (OLS)
+    __init__.py
+    core.py
+    README.md
+  vecm/                       # VECM / cointégration de Johansen
+    __init__.py
+    core.py
+    vecm_model.py
+    mhm_tables.npz            # tables MHM (1999)
+    README.md
+    DOCUMENTATION.md
+  stationarity_test/          # tests de racine unitaire / stationnarité
+    __init__.py
+    core.py
+    README.md
+  stationarity/               # alias déprécié → stationarity_test
+    __init__.py
+```
+
+Dossiers complémentaires (racine du dépôt) :
+
+```text
+tests/                        # suite pytest (ARMA, GARCH, ARDL, VAR, VECM, stationnarité, …)
+exemples/                     # notebooks par thème (ARMA, ARMA_GARCH, ARDL, stationarity, pipelines, …)
+website/                      # guide utilisateur GitHub Pages (EN/FR)
+docs/                         # images de formules du README (pas la racine Pages)
 pyproject.toml
 README.md
 README.fr.md
@@ -420,8 +462,6 @@ README.fr.md
 
 ```bash
 python -m pytest tests/ -q
-python tests/test_vecm.py
-python examples/recipes.py
 ```
 
 ## 8. Références (méthodes implémentées)
@@ -434,9 +474,18 @@ python examples/recipes.py
 - Hansen, B. (1994), Autoregressive conditional density estimation, *International Economic Review* (skew-\(t\)).
 - Corsi, F. (2009), A simple approximate long-memory model of realized volatility, *Journal of Financial Econometrics* (HAR).
 - Berndt, E., Hall, B., Hall, R., Hausman, J. (1974), Estimation and inference in nonlinear structural models, *Annals of Economic and Social Measurement* (BHHH / OPG).
+- Johansen, S. (1995), *Likelihood-Based Inference in Cointegrated Vector Autoregressive Models*.
+- MacKinnon, J. G., Haug, A. A., & Michelis, L. (1999), Numerical distribution functions of likelihood ratio tests for cointegration, *Journal of Applied Econometrics*.
+- Lütkepohl, H. (2005), *New Introduction to Multiple Time Series Analysis*.
+- Pesaran, M. H., Shin, Y., & Smith, R. J. (2001), Bounds testing approaches to the analysis of level relationships, *Journal of Applied Econometrics* (ARDL).
+- Dickey, D. A., & Fuller, W. A. (1979), Distribution of the estimators for autoregressive time series with a unit root, *Journal of the American Statistical Association* (ADF).
+- Kwiatkowski, D., Phillips, P. C. B., Schmidt, P., & Shin, Y. (1992), Testing the null hypothesis of stationarity against the alternative of a unit root, *Journal of Econometrics* (KPSS).
+- Phillips, P. C. B., & Perron, P. (1988), Testing for a unit root in time series regression, *Biometrika* (PP).
+- Elliott, G., Rothenberg, T. J., & Stock, J. H. (1996), Efficient tests for an autoregressive unit root, *Econometrica* (DF-GLS).
+- Zivot, E., & Andrews, D. W. K. (1992), Further evidence on the great crash, the oil-price shock, and the unit-root hypothesis, *Journal of Business & Economic Statistics* (ZA).
 
 ---
 
 ## Licence
 
-MIT (voir `pyproject.toml`). Version **0.1.5**.
+MIT (voir `pyproject.toml`). Version **0.1.7**.
