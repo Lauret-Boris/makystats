@@ -64,7 +64,7 @@ long-run coefficients, CUSUM stability and level forecasts.</p>
 <h2>Fit and bounds test</h2>
 <pre><code>res = ardl(y, x=x, lags=2, order=2, case=3).fit()
 print(res.summary())
-print(res.bounds)            # Pesaran / Narayan F and t
+print(res.bounds)            # Wald F / q, t(α), Pesaran / Narayan CV
 print(res.long_run_table)
 
 # Order selection
@@ -146,7 +146,8 @@ fc_e = res.forecast_ecm(
   <tr><td><code>nobs</code>, <code>df_model</code>, <code>df_resid</code>, <code>sigma2</code></td><td>Sizes and variance</td></tr>
   <tr><td><code>rsquared</code>, <code>rsquared_adj</code></td><td>Fit quality</td></tr>
   <tr><td><code>residuals</code>, <code>fitted_values</code></td><td>Indexed series</td></tr>
-  <tr><td><code>long_run</code>, <code>long_run_table</code></td><td>Long-run multipliers</td></tr>
+  <tr><td><code>long_run</code>, <code>long_run_table</code></td><td>Cointegrating equation only (restricted det. + x)</td></tr>
+  <tr><td><code>long_run_levels</code>, <code>long_run_levels_table</code></td><td>Full levels-equation multipliers (incl. unrestricted det.)</td></tr>
 </table>
 
 <h2>Diagnostics</h2>
@@ -158,7 +159,7 @@ res.plot_diagnostics()
 res.plot_cusum(alpha=0.05)   # alpha=0.05 or 0.10
 </code></pre>
 <footer>
-  <p>makystats v0.1.6 · MIT License ·
+  <p>makystats v0.1.7 · MIT License ·
     <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
     <a href="https://pypi.org/project/makystats/">PyPI</a> ·
     Author: ANDRIANITOVIANA Lauret Boris</p>
