@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Stationarity · makystats</title>
+  <meta name="description" content="makystats unit-root and stationarity tests: ADF, sequential ADF, KPSS, Phillips–Perron, DF-GLS, Zivot–Andrews, Engle–Granger"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <script src="js/nav.js" defer></script>
+</head>
+<body>
+<header class="topbar">
+  <button type="button" class="menu-btn" id="menu-btn" aria-controls="sidebar" aria-expanded="true" aria-label="Menu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+  <a class="brand" href="index.html">makystats</a>
+  <a class="ext" href="https://github.com/Lauret-Boris/makystats" rel="noopener">GitHub</a>
+  <a class="ext" href="https://pypi.org/project/makystats/" rel="noopener">PyPI</a>
+  <span class="lang"><a href="fr/stationarity.html">FR</a> · EN</span>
+</header>
+<div class="body-row">
+  <aside class="sidebar" id="sidebar">
+    <a class="nav-item" href="index.html">Home</a>
+    <a class="nav-item" href="install.html">Install</a>
+    <div class="nav-group" id="nav-models">
+      <button type="button" class="nav-group-toggle" id="nav-models-toggle" aria-expanded="true" aria-controls="nav-models-items">
+        <span>Models</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="nav-group-items" id="nav-models-items">
+      <a class="nav-item" href="arma.html">ARMA</a>
+      <a class="nav-item" href="armagarch.html">ARMA-GARCH</a>
+      <a class="nav-item" href="var.html">VAR</a>
+      <a class="nav-item" href="vecm.html">VECM</a>
+      <a class="nav-item" href="ardl.html">ARDL</a>
+      </div>
+    </div>
+    <div class="nav-group" id="nav-tests">
+      <button type="button" class="nav-group-toggle" id="nav-tests-toggle" aria-expanded="true" aria-controls="nav-tests-items">
+        <span>Tests</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="nav-group-items" id="nav-tests-items">
+      <a class="nav-item active" href="stationarity.html">Stationarity</a>
+      </div>
+    </div>
+    <a class="nav-item" href="examples.html">Examples</a>
+  </aside>
+  <button type="button" class="sidebar-backdrop" id="sidebar-backdrop" aria-label="Close menu"></button>
+  <div class="scroll">
+    <main class="wrap">
+<h1>Stationarity / unit-root tests</h1>
+<p>
+  Native unit-root and stationarity tests in
+  <code>makystats.stationarity_test</code> (not estimation models).
+  Inspectable OLS tables, multi-specification compares, and sequential ADF strategy.
+</p>
+<p class="muted">
+  Guide:
+  <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/stationarity_test/README.md"><code>makystats/stationarity_test/README.md</code></a>
+</p>
+
+<h2>Import</h2>
+<pre><code>from makystats import (
+    adf, adf_sequential,
+    kpss, pp, dfgls, za,
+    engle_granger, unit_root_summary,
+)
+# aliases: phillips_perron, zivot_andrews_test, df_gls, ers, kpss_test
+</code></pre>
+
+<h2>Quick examples</h2>
+<pre><code>print(adf(y, regression="ct").summary())
+print(adf(y, regression="ct").ols.summary())
+
+seq = adf_sequential(y)
+print(seq.summary())
+seq.plot()   # decision tree, active path highlighted
+
+print(kpss(y, regression="c").summary())
+print(pp(y, regression="ct", lags="auto").summary())
+print(dfgls(y, regression="ct", autolag="MAIC").summary())
+print(za(y, regression="ct").summary())
+
+print(unit_root_summary(y))
+</code></pre>
+
+<h2>Available tests</h2>
+<table>
+  <tr><th>Test</th><th>H₀</th><th>Highlights</th></tr>
+  <tr><td>ADF</td><td>unit root</td><td>MacKinnon p-values; <code>.ols.summary()</code></td></tr>
+  <tr><td>ADF sequential</td><td>unit root (strategy)</td><td>models 3→2→1, Φ joint tests, path plot</td></tr>
+  <tr><td>KPSS</td><td><em>stationarity</em></td><td>Newey–West; level / trend</td></tr>
+  <tr><td>Phillips–Perron</td><td>unit root</td><td>Z(τ), Z(ρ)</td></tr>
+  <tr><td>DF-GLS (ERS)</td><td>unit root</td><td>GLS detrending; MAIC; Perron–Qu lag policy</td></tr>
+  <tr><td>Zivot–Andrews</td><td>unit root without break</td><td>one endogenous break</td></tr>
+  <tr><td>Engle–Granger</td><td>no cointegration</td><td>two series</td></tr>
+</table>
+
+<h2>Main parameters</h2>
+<table>
+  <tr><th>Function</th><th>Key arguments</th></tr>
+  <tr>
+    <td><code>adf(y, …)</code></td>
+    <td><code>regression</code> = <code>n</code> / <code>c</code> / <code>ct</code> ·
+        <code>maxlag</code> · <code>autolag</code> = <code>AIC</code> / <code>BIC</code> / <code>None</code>
+        (lag IC on a <strong>common sample</strong>)</td>
+  </tr>
+  <tr>
+    <td><code>adf_sequential(y, …)</code></td>
+    <td><code>maxlag</code> · <code>autolag</code> · <code>alpha</code> (default 0.05) —
+        lag chosen on Model 3, then path 3→2→1 with Φ tests</td>
+  </tr>
+  <tr>
+    <td><code>kpss(y, …)</code></td>
+    <td><code>regression</code> = <code>c</code> / <code>ct</code> · <code>nlags</code> = <code>auto</code> or int</td>
+  </tr>
+  <tr>
+    <td><code>pp(y, …)</code></td>
+    <td><code>regression</code> = <code>n</code> / <code>c</code> / <code>ct</code> · <code>lags</code> = <code>auto</code> or int</td>
+  </tr>
+  <tr>
+    <td><code>dfgls(y, …)</code></td>
+    <td><code>regression</code> = <code>c</code> / <code>ct</code> · <code>maxlag</code> ·
+        <code>autolag</code> = <code>AIC</code> / <code>BIC</code> / <code>MAIC</code></td>
+  </tr>
+  <tr>
+    <td><code>za(y, …)</code></td>
+    <td><code>regression</code> = <code>c</code> / <code>t</code> / <code>ct</code> (break type) ·
+        <code>trim</code> (default 0.15) · <code>maxlag</code> · <code>autolag</code> ·
+        <code>lag_policy</code> = <code>per_break</code> / <code>global</code></td>
+  </tr>
+  <tr>
+    <td><code>engle_granger(y, x, …)</code></td>
+    <td>Cointegration residual ADF; see module README for options</td>
+  </tr>
+</table>
+
+<p>
+  Result objects expose <code>.summary()</code>, and where applicable
+  <code>.ols</code> / <code>.regression.summary()</code> for the underlying ADF-type regression.
+  Sequential ADF: <code>seq.adf_model(3)</code>, joint Φ via path objects,
+  <code>seq.plot()</code> for the decision tree.
+</p>
+<p>
+  Helpers: <code>kpss_compare</code>, <code>pp_compare</code>, <code>dfgls_compare</code>,
+  <code>za_compare</code>, <code>adf_joint_test</code>, <code>unit_root_summary</code>.
+</p>
+
+<h2>Example notebook</h2>
+<p>
+  Sequential ADF strategy:
+  <a href="https://github.com/Lauret-Boris/makystats/blob/main/exemples/stationarity/Sequential_ADF_Strategy.ipynb">GitHub</a> ·
+  <a href="https://nbviewer.org/github/Lauret-Boris/makystats/blob/main/exemples/stationarity/Sequential_ADF_Strategy.ipynb">nbviewer</a> ·
+  <a href="https://colab.research.google.com/github/Lauret-Boris/makystats/blob/main/exemples/stationarity/Sequential_ADF_Strategy.ipynb">Colab</a>
+</p>
+
+<footer>
+  <p>makystats v0.1.7 · MIT License ·
+    <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
+    <a href="https://pypi.org/project/makystats/">PyPI</a> ·
+    Author: ANDRIANITOVIANA Lauret Boris</p>
+  <p class="muted">Documentation site only — source code lives in the repository and on PyPI, not on these pages.</p>
+</footer>
+    </main>
+  </div>
+</div>
+</body>
+</html>
