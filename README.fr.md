@@ -58,17 +58,28 @@ Générées depuis le dossier `website/` (GitHub Pages). Le dossier `docs/` du d
 Guides techniques complets : [VECM](https://github.com/Lauret-Boris/makystats/blob/main/makystats/vecm/DOCUMENTATION.md), [VAR](https://github.com/Lauret-Boris/makystats/blob/main/makystats/var_model/README.md), [ARMA-GARCH](https://github.com/Lauret-Boris/makystats/blob/main/makystats/armagarch/DOCUMENTATION.md), [ARMA](https://github.com/Lauret-Boris/makystats/blob/main/makystats/arma/README.md), [ARDL](https://github.com/Lauret-Boris/makystats/blob/main/makystats/ardl/DOCUMENTATION.md), [stationnarité / racines unitaires](https://github.com/Lauret-Boris/makystats/blob/main/makystats/stationarity_test/README.md) (aussi livrés dans le paquet installé).
 
 
-## Version 0.1.7
+## Version 0.1.8
 
-- **Test aux bornes ARDL** : statistique F = **Wald / q** sur les coefficients ARDL (H0 : Σφ = 1, Σβ_j = 0 ; case 2 restreint aussi const ; case 4 aussi trend). Aligné sur les sorties Conditional-EC ; valide avec `order=0`.
-- **Long terme ARDL** : `res.long_run` / `long_run_table` = **équation de cointégration seule** (déterministes restreints + x). Multiplicateurs levels complets : `res.long_run_levels` / `long_run_levels_table`.
-- **ECM ARDL** : datation mixte pour `order=0` (niveau contemporain dans le CE, pas de `D.x.L0` séparé) ; placement const/trend selon le case PSS ; identité UECM↔ECM.
-- **`restrict_ecm`** : sans retrait → coefficients Bardsen ; OLS libre seulement si des termes sont retirés ; α protégé sauf `force_drop_alpha=True`.
-- **Graphiques** : `plot_long_run_fitted` (y vs équilibre levels + ECT) ; axe compatible PeriodIndex.
-- **Documentation / site** : badges et guides ARDL en 0.1.7.
+- **Vraisemblance exacte ARMA** : `likelihood='conditional'` (défaut, burn-in) ou `'exact'` (filtre de Kalman stationnaire, gaussien). Exact supporte `trend` ∈ {`n`,`c`,`t`,`ct`}, exogènes, retards creux et SARMA multiplicatif ; aligne EViews ARMA ML / statsmodels ARIMA (Airline ARMA(1,1)+c : LL ≈ 121,70). `summary()` affiche Ljung–Box, Jarque–Bera, hétéroscédasticité, asymétrie et kurtosis sur résidus standardisés. `arima` / `sarima` / `select_arma_order` / `fit_from_arma_order_table` acceptent `likelihood`. Le défaut reste conditionnel (lois non gaussiennes, grilles GARCH).
+
+- **Engle–Granger** : valeurs critiques et p-values MacKinnon (1994, 2010) N=2 (alignées sur statsmodels `coint`) ; coefficients d’étape 1 dans `res.extra["coint_coef"]`.
+
+- **Départs ARMA–GARCH** : `start='precise'` (défaut) ou `start='fast'` (Yule–Walker / Hannan–Rissanen). `select_order` utilise `fast` sur la grille.
+- **Polish conditionnel** et **SE QMLE** : `cov_type='qml'` / `robust` (sandwich Bollerslev–Wooldridge) ; OPG reste le défaut.
+- **Sélection ARDL** : `select_ardl_order(..., common_sample=True)` (défaut) estime tous les candidats sur le même échantillon effectif pour des AIC/BIC comparables ; `best_model` est re-estimé sur son échantillon naturel.
+- **Prévisions ARMA/ARIMA** : SE multi-pas exacts via poids MA(∞) ψ (intégration pour `d = 1, 2`).
+- **Réparation de domaine ARMA–GARCH** : si l’optimum libre sort avec α &lt; 0, β &lt; 0 ou (GJR/TARCH) α+γ &lt; 0, `fit` peut **remplacer** l’optimum libre par une re-estimation contrainte (`domain_repair=True` par défaut). `arma_garch(..., domain_repair=False)` rétablit le comportement libre précédent et coupe le `UserWarning` de domaine. L’option est propagée par `select_order` et le walk-forward. Le GJR force δ=α+γ ≥ 0 pendant la relance. Drapeaux `domain_retry` / `domain_retry_accepted`.
+- **Multi-départ (`n_starts`)** : départs de variance optionnels (`n_starts>1`) ; chaque départ est poli et réparé, la meilleure LL **finale** est retenue. Défaut `1` = départ unique (β≈0.85).
+- **Drapeau de convergence après réparation** : si la relance contrainte est acceptée, `res.converged` est réévalué sur la solution réparée (`polish_delta=0`), pour ne pas marquer à tort un échec.
+- **Robustesse API (P0)** : t-stats / p-values armagarch en NaN si SE = 0 ou non fini (plus de warning de division) ; `JohansenTest(data)` s’ajuste automatiquement pour que `.summary()` fonctionne sans `.fit()` supplémentaire.
+- **Filtre FIGARCH** : fenêtre de troncature complète + backcast pour les retards pré-échantillon (aligné sur `arch`) ; borne unifiée `d ∈ (0.001, 0.999)`. **Les prévisions FIGARCH multi-pas sont expérimentales** (écart possible ~5–10 % vs `arch` dès l’horizon 5).
+- **Alias `mean`** : `mean='ARMA'` = AR+MA sans X ; `mean='ARMAX'` exige `x=`. `select_order` défaut `start=None` : grille=`fast`, `return_best`=`precise` ; un `start=` explicite est conservé pour les deux.
+- **Avertissements** : plus de `filterwarnings('ignore')` global ; silence local autour des optimiseurs uniquement.
+- **Documentation / site** : tableaux de paramètres enrichis pour **tous** les modules (EN/FR).
 
 ### Versions antérieures
 
+- **0.1.7** — Bornes ARDL F = Wald/q ; `long_run` = CE seule + `long_run_levels` ; ECM order=0 datation mixte ; `restrict_ecm` Bardsen si drop vide.
 - **0.1.6** — ARMA–GARCH AR/MA libres (racines inverses) ; `nonneg_var` / `stationary_var` ; prévisions APARCH/FIGARCH ; `res.optimization` ; retards ADF sur échantillon commun.
 - **0.1.5** — Suite de stationnarité (KPSS / PP / DF-GLS / ZA, ADF séquentiel, MAIC / Perron–Qu).
 - **0.1.4** — Intercept ECM ARDL (cas PSS 3–5) ; UECM exact pour `order=0`.
@@ -488,4 +499,4 @@ python -m pytest tests/ -q
 
 ## Licence
 
-MIT (voir `pyproject.toml`). Version **0.1.7**.
+MIT (voir `pyproject.toml`). Version **0.1.8**.

@@ -18,7 +18,7 @@
 | **Install** | `pip install makystats` |
 | **Python** | >= 3.9 (tested up to 3.14) |
 | **License** | MIT |
-| **Version** | 0.1.7 |
+| **Version** | 0.1.8 |
 
 **Documentation:** [Online user guide (EN/FR)](https://Lauret-Boris.github.io/makystats/).
 
@@ -41,6 +41,7 @@ Full technical guides: [VECM](https://github.com/Lauret-Boris/makystats/blob/mai
 
 - Homoskedastic ARMA / AR / ARX / HAR (MLE) — same mean API as `arma_garch`, **no** GARCH dynamics
 - Deterministics `trend` = `n` / `c` / `t` / `ct`; order selection via `select_arma_order`
+- Multi-step forecast SE from exact MA(∞) ψ-weights (integrated for `d ≥ 1`)
 - Use when only the mean equation is needed; switch to `arma_garch` for conditional volatility / VaR
 
 **Volatility (`makystats.armagarch`)**
@@ -49,6 +50,8 @@ Full technical guides: [VECM](https://github.com/Lauret-Boris/makystats/blob/mai
 - Innovations: normal, Student-t, Hansen skew-t, GED
 - Deterministic terms in the mean: `trend` = `n` / `c` / `t` / `ct` (constant and/or linear trend)
 - Unconstrained BFGS on a reparameterised space; OPG standard errors by default
+- Automatic **domain repair** when α/β (or GJR α+γ) leave the admissible region; optional `nonneg_var` / `stationary_var`
+- FIGARCH truncation uses full lag window + backcast (aligned with `arch`)
 - Fluent API in the spirit of [arch](https://github.com/bashtage/arch)
 
 **VAR (`makystats.var_model`)**
@@ -68,7 +71,7 @@ Full technical guides: [VECM](https://github.com/Lauret-Boris/makystats/blob/mai
 
 - Native OLS ARDL, UECM, long-run multipliers, Pesaran / Narayan bounds test, ECM
 - Cases 1–5 (PSS deterministics); CUSUM; conditional forecasts and restricted ECM
-- Order selection via `select_ardl_order`; helpers `fit_from_ardl_order_table`
+- Order selection via `select_ardl_order` with **common sample** (comparable AIC/BIC); helpers `fit_from_ardl_order_table`
 
 **Unit-root / stationarity (`makystats.stationarity_test`)**
 
@@ -79,17 +82,26 @@ Full technical guides: [VECM](https://github.com/Lauret-Boris/makystats/blob/mai
 
 ---
 
-## Release 0.1.7
+## Release 0.1.8
 
-- **ARDL bounds test**: F-statistic is the **Wald / q** test on ARDL coefficients (H0: Σφ = 1, Σβ_j = 0; case 2 also restricts const; case 4 also restricts trend). Matches Conditional-EC software output; valid with `order=0`.
-- **ARDL long-run display**: `res.long_run` / `long_run_table` show **cointegrating equation only** (restricted deterministics + x). Full levels multipliers are in `res.long_run_levels` / `long_run_levels_table`.
-- **ARDL ECM**: mixed dating for `order=0` (level contemporaneous in CE, no separate `D.x.L0`); unrestricted const/trend placement by PSS case; UECM↔ECM algebraic identity.
-- **`restrict_ecm`**: empty drop returns Bardsen (unrestricted) coefficients; free OLS only when terms are removed; α protected unless `force_drop_alpha=True`.
-- **Plots**: `plot_long_run_fitted` (y vs levels equilibrium + ECT); PeriodIndex-safe x-axis.
-- **Docs / site**: version badges and ARDL guides updated to 0.1.7.
+- **ARMA–GARCH starts**: `start='precise'` (default, ARIMA pre-fit) or `start='fast'` (Yule–Walker / Hannan–Rissanen). `select_order` uses `fast` on the grid.
+- **Conditional polish** and **QMLE SE**: `cov_type='qml'` / `robust` (Bollerslev–Wooldridge sandwich); OPG remains default.
+- **ARDL order selection**: `select_ardl_order(..., common_sample=True)` (default) estimates every candidate on the same effective sample so AIC/BIC/HQIC are comparable; `best_model` is refit on its natural sample.
+- **ARMA/ARIMA forecast SE**: multi-step intervals use exact MA(∞) ψ-weights (integrated for `d = 1, 2`), not `σ√h`.
+- **ARMA–GARCH domain repair**: if unrestricted MLE exits with α &lt; 0, β &lt; 0, or (GJR/TARCH) α+γ &lt; 0, `fit` may **replace** the free optimum by a constrained re-fit (`domain_repair=True` by default). `arma_garch(..., domain_repair=False)` restores the previous unrestricted behaviour and suppresses the domain `UserWarning`. The option is propagated by `select_order` and walk-forward. GJR enforces δ=α+γ ≥ 0 during the retry. Flags `domain_retry` / `domain_retry_accepted`.
+- **FIGARCH filter**: full truncation window with backcast for pre-sample lags (closer to `arch`); unified `d ∈ (0.001, 0.999)` clamp. **Multi-step FIGARCH variance forecasts are experimental** (may differ from `arch` by ~5–10% at horizons ≥ 5).
+- **Multi-start (`n_starts`)** : optional variance starts (`n_starts>1`); each start is fully polished and domain-repaired, then the best **final** LL is kept (`selection=final_loglik_after_polish_and_repair`). Default `1` = single historical start (β≈0.85).
+- **Convergence flag after domain repair**: when a constrained retry is accepted, `res.converged` is re-assessed on the repaired solution (`polish_delta=0`), so accepted repairs are not falsely marked as failed.
+- **API robustness (P0)**: armagarch t-stats / p-values use NaN when SE is 0 or non-finite (no divide-by-zero warning); `JohansenTest(data)` auto-fits so `.summary()` works without an extra `.fit()` call.
+- **mean aliases**: `mean='ARMA'` = AR+MA without X; `mean='ARMAX'` requires `x=`. `select_order` default `start=None`: grid=`fast`, `return_best`=`precise`; explicit `start=` is kept for both.
+- **Warnings hygiene**: no global `filterwarnings('ignore')`; local `catch_warnings` around optimisers only.
+- **Engle–Granger**: MacKinnon (1994, 2010) N=2 residual-based critical values and continuous p-values (aligned with statsmodels `coint`); stage-1 coefficients in `res.extra["coint_coef"]`.
+- **ARMA exact likelihood**: `likelihood='conditional'` (default, burn-in) or `'exact'` (stationary Kalman filter, Gaussian). Exact supports `trend` in `{'n','c','t','ct'}`, exogenous `x`, sparse AR/MA lags, and multiplicative seasonal ARMA; matches EViews ARMA ML / statsmodels ARIMA on comparable specs (Airline ARMA(1,1)+c: LL ≈ 121.70). `summary()` prints Ljung–Box, Jarque–Bera, heteroskedasticity (break-var), skew and kurtosis on standardised residuals. `arima` / `sarima` / `select_arma_order` / `fit_from_arma_order_table` all accept `likelihood`. Keep conditional as default for non-Gaussian `dist` and GARCH grids.
+- **Docs / site**: expanded parameter tables for all modules (EN/FR).
 
 ### Earlier releases
 
+- **0.1.7** — ARDL bounds F = Wald/q; `long_run` = CE only + `long_run_levels`; ECM order=0 mixed dating; `restrict_ecm` Bardsen when empty drop.
 - **0.1.6** — ARMA–GARCH free AR/MA (inverted roots); `nonneg_var` / `stationary_var`; APARCH/FIGARCH forecast recursion; `res.optimization`; ADF lag selection on a common sample.
 - **0.1.5** — Stationarity suite (KPSS / PP / DF-GLS / ZA APIs, sequential ADF, MAIC / Perron–Qu); expanded `stationarity_test` README.
 - **0.1.4** — ARDL ECM intercept for PSS cases 3–5; UECM exact for `order=0`; notebook summary layout.
@@ -434,7 +446,7 @@ so that the printed equation matches the non-centred writing
 
 Likelihood and other coefficients are unchanged.
 
-**Sign restrictions.** By default, multi-lag GARCH individual α_k, β_ℓ are **not** forced positive (only ω > 0 via exp); negative coefficients remain admissible provided σ_t² stays positive in the filter (clamped only for numerical safety). This matches unrestricted ML practice and EViews. Set ``nonneg_var=True`` on ``arma_garch`` / ``ARMAGarch`` to force **α ≥ 0**, **β ≥ 0** via an ``exp`` reparameterisation (arch-like constrained behaviour). Set ``stationary_var=True`` to enforce persistence strictly below one: ``sum(α)+sum(β)<1`` (GARCH); ``sum(α)+½sum(γ)+sum(β)<1`` (GJR/TARCH, γ scaled if needed); APARCH uses a ``sum(α)+sum(β)<1`` proxy only. Both flags can be combined. After ``fit()``, ``res.optimization``, ``res.converged`` and ``res.fit_result`` expose BFGS diagnostics. APARCH γ is mapped to (−1, 1) via tanh; FIGARCH d is soft-bounded (with ``nonneg_var``, FIGARCH β ≥ 0).
+**Sign restrictions.** By default, multi-lag GARCH individual α_k, β_ℓ are **not** forced positive (only ω > 0 via exp); negative coefficients remain admissible provided σ_t² stays positive in the filter (clamped only for numerical safety). This is unrestricted multi-lag ML (individual α_k, β_ℓ may be signed). Set ``nonneg_var=True`` on ``arma_garch`` / ``ARMAGarch`` to force **α ≥ 0**, **β ≥ 0** via an ``exp`` reparameterisation (non-negativity constraints, closer to packages such as `arch`). Set ``stationary_var=True`` to enforce persistence strictly below one: ``sum(α)+sum(β)<1`` (GARCH); ``sum(α)+½sum(γ)+sum(β)<1`` (GJR/TARCH, γ scaled if needed); APARCH uses a ``sum(α)+sum(β)<1`` proxy only. Both flags can be combined. After ``fit()``, ``res.optimization``, ``res.converged`` and ``res.fit_result`` expose BFGS diagnostics. APARCH γ is mapped to (−1, 1) via tanh; FIGARCH d is soft-bounded (with ``nonneg_var``, FIGARCH β ≥ 0).
 
 ### 1.3 Innovation distributions
 
@@ -538,7 +550,7 @@ Default **OPG** / BHHH (outer product of gradients):
 
 ![OPG variance](https://raw.githubusercontent.com/Lauret-Boris/makystats/main/docs/formulas/opg.png)
 
-with g_t = ∂ℓ_t / ∂θ evaluated numerically at the MLE (mapped to the economic parameter scale for reporting). Alternative: `cov_type='hessian'` (numerical Hessian of the concentrated objective).
+with g_t = ∂ℓ_t / ∂θ evaluated numerically at the MLE (mapped to the economic parameter scale for reporting). Alternatives: `cov_type='hessian'` (numerical Hessian) or `cov_type='qml'` / `'robust'` (QMLE sandwich, Bollerslev–Wooldridge). Starting values: `start='precise'` (ARIMA pre-fit) or `start='fast'` (Yule–Walker / Hannan–Rissanen; used by `select_order` grids).
 
 ---
 
@@ -689,4 +701,4 @@ python -m pytest tests/ -q
 
 ## License
 
-MIT. Version **0.1.7**.
+MIT. Version **0.1.8**.
