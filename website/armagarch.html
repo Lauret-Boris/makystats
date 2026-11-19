@@ -4,7 +4,7 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>ARMA-GARCH · makystats</title>
-  <meta name="description" content="makystats documentation"/>
+  <meta name="description" content="makystats ARMA-GARCH parameters and usage (v0.1.8)"/>
   <link rel="stylesheet" href="css/style.css"/>
   <script src="js/nav.js" defer></script>
 </head>
@@ -29,123 +29,183 @@
       </button>
       <div class="nav-group-items" id="nav-models-items">
       <a class="nav-item" href="arma.html">ARMA</a>
-      <a class="nav-item active" href="armagarch.html">ARMA-GARCH</a>
-      <a class="nav-item" href="var.html">VAR</a>
-      <a class="nav-item" href="vecm.html">VECM</a>
-      <a class="nav-item" href="ardl.html">ARDL</a>
+<a class="nav-item active" href="armagarch.html">ARMA-GARCH</a>
+<a class="nav-item" href="var.html">VAR</a>
+<a class="nav-item" href="vecm.html">VECM</a>
+<a class="nav-item" href="ardl.html">ARDL</a>
       </div>
     </div>
-    <div class="nav-group" id="nav-tests">
+        <div class="nav-group" id="nav-tests">
       <button type="button" class="nav-group-toggle" id="nav-tests-toggle" aria-expanded="true" aria-controls="nav-tests-items">
-        <span>Tests</span>
+        <span>Stationarity</span>
         <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
       </button>
       <div class="nav-group-items" id="nav-tests-items">
-      <a class="nav-item" href="stationarity.html">Stationarity</a>
+      <a class="nav-item" href="stationarity.html">Overview</a>
+      <a class="nav-item" href="adf.html">ADF</a>
+      <a class="nav-item" href="adf-sequential.html">Sequential ADF</a>
+      <a class="nav-item" href="kpss.html">KPSS</a>
+      <a class="nav-item" href="phillips-perron.html">Phillips–Perron</a>
+      <a class="nav-item" href="dfgls.html">DF-GLS</a>
+      <a class="nav-item" href="zivot-andrews.html">Zivot–Andrews</a>
+      <a class="nav-item" href="engle-granger.html">Engle–Granger</a>
       </div>
     </div>
     <a class="nav-item" href="examples.html">Examples</a>
   </aside>
-  <button type="button" class="sidebar-backdrop" id="sidebar-backdrop" aria-label="Close menu"></button>
+  <button type="button" class="sidebar-backdrop" id="sidebar-backdrop" aria-label="Close"></button>
   <div class="scroll">
     <main class="wrap">
+
 <h1>ARMA–GARCH</h1>
 <p>Joint MLE of a linear mean (ARMA / ARX / HAR / …) and conditional variance
 (GARCH, GJR, EGARCH, APARCH, FIGARCH) under normal, Student-t, skew-t or GED innovations.</p>
 <p class="muted">
   README: <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/armagarch/README.md"><code>makystats/armagarch/README.md</code></a> ·
-  Full technical guide: <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/armagarch/DOCUMENTATION.md"><code>DOCUMENTATION.md</code></a>
+  Guide: <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/armagarch/DOCUMENTATION.md"><code>DOCUMENTATION.md</code></a>
 </p>
 
-<h2>Quick start</h2>
+<h2>Import</h2>
 <pre><code>from makystats import arma_garch, select_order
-
-res = arma_garch(y, mean="AR", ar=1, ma=1, vol="GARCH", dist="normal", trend="c").fit()
-print(res.coef_table)
-print(res.loglik, res.aic, res.bic)
-print(res.forecast(h=5))
-fig = res.plot_diagnostics(lags=20)
-
-# d and seasonality fixed on the whole IC grid
-tab = select_order(
-    ylog, p_range=range(0, 3), q_range=range(0, 2),
-    r_range=[1], s_range=[1], d=1,
-    seasonal_order=(0, 1, 1, 12), criterion="aic",
-)
-tab, best = select_order(..., return_best=True)
 </code></pre>
 
-<h2>API sketch</h2>
+<h2>Recommended presets</h2>
+<p>Two useful ways to set the same API, depending on whether you want
+<strong>unrestricted</strong> coefficients or <strong>constrained</strong> variance parameters
+(closer to packages such as <code>arch</code> / constrained solvers).</p>
 <table>
-  <tr><th>Argument</th><th>Role</th></tr>
-  <tr><td><code>mean</code></td><td><code>Constant</code>, <code>Zero</code>, <code>AR</code>, <code>ARX</code>, <code>ARMAX</code>, <code>HAR</code>, <code>HARX</code>, <code>LS</code></td></tr>
-  <tr><td><code>in_mean</code></td><td><code>None</code> / <code>sigma</code> / <code>var</code> / <code>log</code> — GARCH-M (coef <code>archm</code>)</td></tr>
-  <tr><td><code>trend</code></td><td><code>n</code> / <code>c</code> / <code>t</code> / <code>ct</code></td></tr>
-  <tr><td><code>vol</code></td><td><code>GARCH</code>, <code>ARCH</code>, <code>GJR</code>/<code>TARCH</code>, <code>EGARCH</code>, <code>APARCH</code>, <code>FIGARCH</code></td></tr>
-  <tr><td><code>dist</code></td><td><code>normal</code>, <code>t</code>, <code>skewt</code>, <code>ged</code></td></tr>
-  <tr><td><code>ar</code> / <code>ma</code></td><td>Orders or lag lists (sparse ARMA). Coefficients are <strong>free</strong> (no ±0.99 bound)</td></tr>
-  <tr><td><code>r</code> / <code>s</code></td><td>ARCH / GARCH orders (<code>r=s=0</code> → constant variance)</td></tr>
-  <tr><td><code>power</code></td><td>APARCH power δ (default 2.0)</td></tr>
-  <tr><td><code>threshold_order</code></td><td>GJR/TARCH asymmetry order (default = <code>r</code>)</td></tr>
-  <tr><td><code>d</code></td><td>Regular differences 0, 1 or 2</td></tr>
-  <tr><td><code>seasonal_order</code></td><td><code>(P, D, Q, s)</code> additive seasonal mean</td></tr>
-  <tr><td><code>nonneg_var</code></td><td><code>True</code> → force α, β ≥ 0 via reparam (optional; default free)</td></tr>
-  <tr><td><code>stationary_var</code></td><td><code>True</code> → force variance persistence &lt; 1 (GARCH: α+β; GJR: α+γ/2+β)</td></tr>
-  <tr><td><code>egarch_form</code></td><td><code>centered</code> (default) or <code>raw</code> for EGARCH ω</td></tr>
-  <tr><td><code>cov_type</code></td><td><code>opg</code> (default) or Hessian-based SE</td></tr>
-  <tr><td><code>backcast</code></td><td>Exponential backcast λ for pre-sample variance (default 0.7)</td></tr>
-  <tr><td><code>center</code></td><td>Demean <code>y</code> during optimisation (default <code>True</code>)</td></tr>
+  <tr><th>Goal</th><th>Typical settings</th><th>Effect</th></tr>
+  <tr>
+    <td><strong>Unrestricted ML</strong> (default)</td>
+    <td><code>nonneg_var=False</code>, <code>domain_repair=True</code>, <code>n_starts=1</code>, <code>cov_type='opg'</code></td>
+    <td>α, β free (may be negative if σ² stays positive). If the free optimum leaves the classical domain, one constrained retry may replace it. Single variance start (β≈0.85).</td>
+  </tr>
+  <tr>
+    <td><strong>Fully free optimum</strong></td>
+    <td><code>domain_repair=False</code>, <code>nonneg_var=False</code></td>
+    <td>Never replace the unrestricted solution; no domain <code>UserWarning</code>.</td>
+  </tr>
+  <tr>
+    <td><strong>Constrained variance</strong> (α, β ≥ 0)</td>
+    <td><code>nonneg_var=True</code>, optional <code>stationary_var=True</code></td>
+    <td>α, β forced ≥ 0 via exp map; optional persistence &lt; 1. Closer to constrained GARCH solvers (e.g. <code>arch</code>).</td>
+  </tr>
+  <tr>
+    <td><strong>Robust SE</strong></td>
+    <td><code>cov_type='qml'</code> or <code>'robust'</code></td>
+    <td>Bollerslev–Wooldridge sandwich (QMLE). Default remains OPG.</td>
+  </tr>
+  <tr>
+    <td><strong>Less start-dependent</strong></td>
+    <td><code>n_starts=4</code> (or more)</td>
+    <td>Several (α, β) starts; each is polished and domain-repaired; best <em>final</em> LL kept. Cost ≈ linear in <code>n_starts</code>.</td>
+  </tr>
+  <tr>
+    <td><strong>statsmodels-like mean</strong></td>
+    <td><code>trend='c'|'ct'|'n'</code>, <code>d=</code>, <code>seasonal_order=</code></td>
+    <td>Deterministics and integration follow the same coding spirit as ARIMA/SARIMAX; variance is still makystats GARCH.</td>
+  </tr>
 </table>
+<pre><code># Unrestricted (default)
+res = arma_garch(y, mean="AR", ar=1, ma=1, vol="GARCH").fit()
+
+# Constrained variance (α,β ≥ 0), sandwich SE
+res = arma_garch(y, vol="GARCH", nonneg_var=True, stationary_var=True,
+                 cov_type="qml").fit()
+
+# Multi-start when small samples / high persistence matter
+res = arma_garch(y, vol="GARCH", n_starts=4).fit()
+print(res.optimization["best_start_idx"], res.optimization["selection"])
+</code></pre>
+
+<h2>Parameters (<code>arma_garch</code>)</h2>
+<table>
+  <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+  <tr><td><code>y</code></td><td>array_like / Series</td><td>Dependent series (returns, or prices if <code>transform='logdiff'</code>).</td></tr>
+  <tr><td><code>x</code></td><td>array_like / DataFrame, optional</td><td>Exogenous regressors for ARX / ARMAX / HARX / LS.</td></tr>
+  <tr><td><code>mean</code></td><td>str</td><td>See mean aliases below.</td></tr>
+  <tr><td><code>ar</code> / <code>ma</code></td><td>int or sequence</td><td>AR / MA orders or lag lists (sparse). Coefficients are free (no ±0.99 bound).</td></tr>
+  <tr><td><code>vol</code></td><td>str</td><td><code>GARCH</code>, <code>ARCH</code>, <code>GJR</code>/<code>TARCH</code>, <code>EGARCH</code>, <code>APARCH</code>, <code>FIGARCH</code>.</td></tr>
+  <tr><td><code>p</code> / <code>o</code> / <code>q</code></td><td>int</td><td>ARCH order, asymmetry order (GJR), GARCH order. Aliases: <code>r</code>, <code>threshold_order</code>, <code>s</code>.</td></tr>
+  <tr><td><code>power</code></td><td>float, default 2.0</td><td>APARCH power δ.</td></tr>
+  <tr><td><code>dist</code></td><td>str</td><td><code>normal</code>, <code>t</code>, <code>skewt</code>, <code>ged</code>.</td></tr>
+  <tr><td><code>df</code></td><td>float, optional</td><td>Fixed degrees of freedom for <code>t</code>/<code>skewt</code>/<code>ged</code>. If omitted, ν is estimated (soft-bounded).</td></tr>
+  <tr><td><code>trend</code></td><td><code>'n'|'c'|'t'|'ct'</code></td><td>Deterministics in the mean (statsmodels-style coding).</td></tr>
+  <tr><td><code>in_mean</code></td><td>str or None</td><td>GARCH-in-mean: <code>None</code>, <code>'sigma'</code>, <code>'var'</code>, <code>'log'</code>.</td></tr>
+  <tr><td><code>d</code></td><td>int</td><td>Regular differences of <code>y</code> before estimation.</td></tr>
+  <tr><td><code>seasonal_order</code></td><td><code>(P,D,Q,s)</code></td><td>Additive seasonal mean lags / seasonal differences.</td></tr>
+  <tr><td><code>nonneg_var</code></td><td>bool, default False</td><td>Force α, β ≥ 0 via exp reparameterisation.</td></tr>
+  <tr><td><code>stationary_var</code></td><td>bool, default False</td><td>Force variance persistence &lt; 1 (GARCH: α+β; GJR: α+γ/2+β).</td></tr>
+  <tr><td><code>domain_repair</code></td><td>bool, default <strong>True</strong></td><td>If True, one constrained retry when free MLE leaves the classical domain. <code>False</code> keeps the unrestricted solution.</td></tr>
+  <tr><td><code>n_starts</code></td><td>int, default <strong>1</strong></td><td>Number of variance starting points. Each start is polished and domain-repaired; the best <strong>final</strong> LL is kept. Cost scales with <code>n_starts</code>.</td></tr>
+  <tr><td><code>cov_type</code></td><td>str, default <code>'opg'</code></td><td><code>opg</code>, <code>hessian</code>, or <code>qml</code>/<code>robust</code> (QMLE sandwich).</td></tr>
+  <tr><td><code>start</code></td><td><code>'precise'|'fast'</code></td><td><code>precise</code> (default): ARIMA pre-fit when dense. <code>fast</code>: Yule–Walker / Hannan–Rissanen (used by <code>select_order</code> on the grid).</td></tr>
+  <tr><td><code>backcast</code></td><td>float, default 0.7</td><td>Exponential backcast λ for pre-sample variance.</td></tr>
+  <tr><td><code>center</code></td><td>bool, default True</td><td>Demean <code>y</code> during optimisation when a constant is present.</td></tr>
+  <tr><td><code>max_iter</code>, <code>tol</code></td><td>int / float</td><td>BFGS limits.</td></tr>
+</table>
+
+<h2>mean aliases</h2>
+<table>
+  <tr><th>Value</th><th>Meaning</th></tr>
+  <tr><td><code>Constant</code> / <code>Zero</code></td><td>Intercept only / no intercept.</td></tr>
+  <tr><td><code>AR</code> / <code>ARMA</code></td><td>AR and optional MA <strong>without</strong> exogenous X. <code>ARMA</code> is an alias of <code>AR</code> for this purpose.</td></tr>
+  <tr><td><code>ARX</code></td><td>AR + X (no MA). Requires <code>x=</code>.</td></tr>
+  <tr><td><code>ARMAX</code></td><td>AR + MA + X. Requires <code>x=</code>.</td></tr>
+  <tr><td><code>HAR</code> / <code>HARX</code> / <code>LS</code></td><td>HAR horizons or linear exogenous only.</td></tr>
+</table>
+
+<h2>Domain repair</h2>
+<p>When <code>nonneg_var=False</code>, unrestricted MLE can exit with α &lt; 0, β &lt; 0, or (GJR/TARCH) α+γ &lt; 0.
+With <code>domain_repair=True</code> (default), <code>fit()</code> re-optimises once under non-negativity.
+For GJR, δ = α+γ ≥ 0 is enforced in the constrained map.
+Acceptance: domain OK, finite NLL, at most 50 LL units worse than the free optimum.
+Flags: <code>domain_retry</code>, <code>domain_retry_accepted</code>, <code>unconstrained_ll</code>.
+Disable with <code>domain_repair=False</code>.</p>
+<p>When a constrained retry is <strong>accepted</strong>, <code>res.converged</code> is re-assessed on the repaired solution (practical flag; free-solution <code>polish_delta</code> is not used), so accepted repairs are not falsely marked failed.</p>
+
+<h2>Multi-start (<code>n_starts</code>)</h2>
+<p>Default <code>n_starts=1</code> uses a single variance start (β≈0.85, α≈0.05 for GARCH).
+With <code>n_starts&gt;1</code>, several (α, β) pairs are tried (including low-β starts).
+<strong>Each</strong> start is fully polished and domain-repaired; the winner is the best
+<strong>final</strong> log-likelihood (<code>selection='final_loglik_after_polish_and_repair'</code>).
+This avoids ranking on raw BFGS NLL before repair.</p>
+
+<h2>FIGARCH</h2>
+<p>Full truncation window (1000) with backcast for pre-sample lags.
+<code>d</code> clamped to <code>(0.001, 0.999)</code>. Multi-step variance paths may still differ
+from other packages by a few percent at long horizons (documented caveat).</p>
+
+<h2>Order selection</h2>
+<pre><code>tab, best = select_order(
+    y, p_range=range(0, 3), q_range=range(0, 2),
+    r_range=[1], s_range=[1], criterion="bic",
+    return_best=True,
+    # optional: domain_repair=, nonneg_var=, n_starts=, start=
+)
+</code></pre>
+<p><code>start=None</code> (default): grid uses <code>'fast'</code>; <code>return_best</code> is refit with <code>'precise'</code>.
+An explicit <code>start=</code> is applied to both.</p>
 
 <h2>After <code>fit()</code></h2>
 <table>
   <tr><th>Attribute</th><th>Content</th></tr>
   <tr><td><code>coef_table</code>, <code>params</code>, <code>se</code></td><td>Coefficients and inference</td></tr>
-  <tr><td><code>loglik</code>, <code>aic</code>, <code>bic</code></td><td>Likelihood and information criteria</td></tr>
-  <tr><td><code>ar_roots</code>, <code>ma_roots</code></td><td>Inverted AR/MA roots (modulus &lt; 1 for stationarity / invertibility)</td></tr>
-  <tr><td><code>ar_stationary</code>, <code>ma_invertible</code></td><td>Boolean diagnostics from the roots</td></tr>
-  <tr><td><code>converged</code></td><td>Practical convergence flag (SciPy “precision loss” may still be OK)</td></tr>
-  <tr><td><code>optimization</code></td><td>Dict: raw SciPy <code>success</code>, <code>message</code>, <code>gnorm</code>, <code>convergence_reason</code>, …</td></tr>
-  <tr><td><code>fit_result</code></td><td>Raw SciPy <code>OptimizeResult</code></td></tr>
+  <tr><td><code>loglik</code>, <code>aic</code>, <code>bic</code></td><td>Likelihood and ICs</td></tr>
+  <tr><td><code>ar_roots</code>, <code>ma_roots</code></td><td>Inverted AR/MA roots</td></tr>
+  <tr><td><code>converged</code></td><td>Practical convergence flag</td></tr>
+  <tr><td><code>optimization</code></td><td><code>success</code>, <code>polished</code>, <code>domain_retry</code>, <code>n_starts</code>, <code>best_start_idx</code>, <code>selection</code>, …</td></tr>
 </table>
-<p class="muted">AR/MA polynomials follow the filter: Φ(z)=1−Σφz<sup>k</sup>, Θ(z)=1+Σθz<sup>k</sup>. Multi-step variance forecasts use moments under the fitted density (normal / t / skew-t / GED), including GJR E[z² 1(z&lt;0)] and APARCH κ.</p>
 
-<h2>GARCH-M</h2>
-<pre><code>res = arma_garch(y, mean="AR", ar=1, ma=1, vol="GARCH", in_mean="var").fit()
-# in_mean: None | "sigma" | "var" | "log"  → coefficient archm (λ)
-</code></pre>
 
-<h2>Value-at-Risk / Expected Shortfall</h2>
-<pre><code>res.var(alpha=0.05, h=1, method="parametric")
-res.var(alpha=0.05, h=10, aggregation="cumulative", n_sims=10000, seed=1)
-res.expected_shortfall(alpha=0.05)
-df = res.var_series(alpha=0.05)
-res.var_backtest(alpha=0.05)
-res.plot_var(alphas=(0.05, 0.01), method="parametric")
-</code></pre>
-<ul>
-  <li>Forecast VaR/ES: <code>aggregation="marginal"</code> (default) or <code>"cumulative"</code> (MC)</li>
-  <li>In-sample 1-step: <code>var_series</code>, <code>var_backtest</code>, <code>plot_var</code></li>
-</ul>
-
-<h2>Fitted series</h2>
-<pre><code>res.fitted_values
-res.residuals
-res.results_frame(include_x=True, index=dates)
-# Identity: y = fitted_values + residuals
-</code></pre>
-
-<div class="note">
-  Unconstrained BFGS on a reparameterised space; OPG standard errors by default.
-  Deep technical material (likelihood, burn-in, backcast, optimisation):
-  <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/armagarch/DOCUMENTATION.md">DOCUMENTATION.md</a>.
-</div>
+<nav class="page-nav" aria-label="Page">
+  <a class="page-nav-link prev" href="arma.html"><span class="page-nav-dir">← Previous</span><span class="page-nav-title">ARMA</span></a>
+  <a class="page-nav-link next" href="var.html"><span class="page-nav-dir">Next →</span><span class="page-nav-title">VAR</span></a>
+</nav>
 <footer>
-  <p>makystats v0.1.7 · MIT License ·
+  <p>makystats v0.1.8 · MIT License ·
     <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
-    <a href="https://pypi.org/project/makystats/">PyPI</a> ·
-    Author: ANDRIANITOVIANA Lauret Boris</p>
-  <p class="muted">Documentation site only — source code lives in the repository and on PyPI, not on these pages.</p>
+    <a href="https://pypi.org/project/makystats/">PyPI</a></p>
 </footer>
     </main>
   </div>

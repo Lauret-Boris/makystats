@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Engle–Granger · makystats</title>
+  <meta name="description" content="makystats — Engle–Granger (v0.1.8)"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <script src="js/nav.js" defer></script>
+</head>
+<body>
+<header class="topbar">
+  <button type="button" class="menu-btn" id="menu-btn" aria-controls="sidebar" aria-expanded="true" aria-label="Menu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+  <a class="brand" href="index.html">makystats</a>
+  <a class="ext" href="https://github.com/Lauret-Boris/makystats" rel="noopener">GitHub</a>
+  <a class="ext" href="https://pypi.org/project/makystats/" rel="noopener">PyPI</a>
+  <span class="lang"><a href="fr/engle-granger.html">FR</a> · EN</span>
+</header>
+<div class="body-row">
+  <aside class="sidebar" id="sidebar">
+    <a class="nav-item" href="index.html">Home</a>
+    <a class="nav-item" href="install.html">Install</a>
+    <div class="nav-group" id="nav-models">
+      <button type="button" class="nav-group-toggle" id="nav-models-toggle" aria-expanded="true" aria-controls="nav-models-items">
+        <span>Models</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="nav-group-items" id="nav-models-items">
+      <a class="nav-item" href="arma.html">ARMA</a>
+      <a class="nav-item" href="armagarch.html">ARMA-GARCH</a>
+      <a class="nav-item" href="var.html">VAR</a>
+      <a class="nav-item" href="vecm.html">VECM</a>
+      <a class="nav-item" href="ardl.html">ARDL</a>
+      </div>
+    </div>
+    <div class="nav-group" id="nav-tests">
+      <button type="button" class="nav-group-toggle" id="nav-tests-toggle" aria-expanded="true" aria-controls="nav-tests-items">
+        <span>Stationarity</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="nav-group-items" id="nav-tests-items">
+      <a class="nav-item" href="stationarity.html">Overview</a>
+      <a class="nav-item" href="adf.html">ADF</a>
+      <a class="nav-item" href="adf-sequential.html">Sequential ADF</a>
+      <a class="nav-item" href="kpss.html">KPSS</a>
+      <a class="nav-item" href="phillips-perron.html">Phillips–Perron</a>
+      <a class="nav-item" href="dfgls.html">DF-GLS</a>
+      <a class="nav-item" href="zivot-andrews.html">Zivot–Andrews</a>
+      <a class="nav-item active" href="engle-granger.html">Engle–Granger</a>
+      </div>
+    </div>
+    <a class="nav-item" href="examples.html">Examples</a>
+  </aside>
+  <button type="button" class="sidebar-backdrop" id="sidebar-backdrop" aria-label="Close menu"></button>
+  <div class="scroll">
+    <main class="wrap">
+
+
+<h1>Engle–Granger</h1>
+<p>Residual-based cointegration test for <strong>two</strong> series (Engle–Granger two-step).
+Null: <em>no cointegration</em>.</p>
+<p class="muted">
+  README: <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/stationarity_test/README.md"><code>stationarity_test/README.md</code></a>
+</p>
+
+<h2>Import</h2>
+<pre><code>from makystats import engle_granger
+
+res = engle_granger(y0, y1, trend="c", maxlag=None, autolag="AIC")
+print(res.summary())
+print(res.extra["coint_coef"])   # stage-1 OLS coefficients
+print(res.reject_null(0.05))
+</code></pre>
+
+<h2>Parameters</h2>
+<table>
+  <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+  <tr><td><code>y0</code></td><td>array_like</td><td>First series (left-hand side of the cointegrating regression).</td></tr>
+  <tr><td><code>y1</code></td><td>array_like</td><td>Second series (right-hand side). Aligned on the trailing common sample.</td></tr>
+  <tr><td><code>trend</code></td><td><code>'n'|'nc'|'c'|'ct'</code>, default <code>'c'</code></td><td>
+    Deterministics in the <em>cointegrating equation</em> (stage 1):
+    <code>n</code>/<code>nc</code> none;
+    <code>c</code> constant;
+    <code>ct</code> constant + linear trend.
+  </td></tr>
+  <tr><td><code>maxlag</code></td><td>int or None</td><td>Maximum lag for the residual ADF (stage 2). <code>None</code> → rule of thumb from sample size.</td></tr>
+  <tr><td><code>autolag</code></td><td><code>'AIC'|'BIC'|'t-stat'|None</code>, default <code>'AIC'</code></td><td>
+    Residual ADF lag selection. Same meaning as <code>adf</code>.
+    Use <code>maxlag=k, autolag=None</code> for a fixed lag (exact match to statsmodels <code>coint</code> with the same lag).
+  </td></tr>
+</table>
+
+<h2>What is computed</h2>
+<ol>
+  <li><strong>Stage 1</strong> — OLS of <code>y0</code> on <code>y1</code> (+ deterministics).</li>
+  <li><strong>Stage 2</strong> — ADF on residuals with <code>regression='n'</code> (no constant in the residual regression; standard residual-based design).</li>
+  <li><strong>Inference</strong> — MacKinnon (1994, 2010) response surfaces for <strong>N=2</strong> (bivariate residual-based cointegration), same tables as statsmodels <code>coint</code>. Finite-sample critical values use <code>nobs&nbsp;-&nbsp;1</code> (Stata <code>egranger</code> convention).</li>
+</ol>
+
+<h2>Result attributes</h2>
+<table>
+  <tr><th>Attribute</th><th>Content</th></tr>
+  <tr><td><code>statistic</code></td><td>Residual ADF t-statistic</td></tr>
+  <tr><td><code>pvalue</code></td><td>MacKinnon N=2 approximate p-value (continuous, not truncated at 0.01/0.10)</td></tr>
+  <tr><td><code>critical_values</code></td><td>1%, 5%, 10% (sample-size dependent for <code>c</code>/<code>ct</code>)</td></tr>
+  <tr><td><code>lags</code></td><td>Lags chosen for the residual ADF</td></tr>
+  <tr><td><code>nobs</code></td><td>Length of the cointegrating sample</td></tr>
+  <tr><td><code>extra["coint_coef"]</code></td><td>Stage-1 coefficients (<code>y1</code>, optional <code>const</code>/<code>trend</code>)</td></tr>
+  <tr><td><code>extra["r_squared"]</code></td><td>Stage-1 R²</td></tr>
+  <tr><td><code>extra["adf_nobs"]</code></td><td>Effective residual ADF sample size</td></tr>
+  <tr><td><code>reject_null(alpha)</code></td><td><code>True</code> if the test rejects no-cointegration at level <code>alpha</code></td></tr>
+</table>
+
+<h2>Notes</h2>
+<ul>
+  <li>With <code>autolag</code>, lag selection follows the native <code>adf</code> policy (common-sample IC). The lag may therefore differ from statsmodels; the MacKinnon mapping of a given statistic remains identical.</li>
+  <li>For <code>trend='n'</code>, 2010 finite-sample critical values are not published for N&gt;1 (returned as NaN); the asymptotic p-value is still available.</li>
+  <li>Near-perfect collinearity triggers a warning; the statistic is set to −∞.</li>
+</ul>
+
+<nav class="page-nav" aria-label="Page">
+  <a class="page-nav-link prev" href="zivot-andrews.html"><span class="page-nav-dir">← Previous</span><span class="page-nav-title">Zivot–Andrews</span></a>
+  <a class="page-nav-link next" href="examples.html"><span class="page-nav-dir">Next →</span><span class="page-nav-title">Examples</span></a>
+</nav>
+<footer>
+  <p>makystats v0.1.8 · MIT License ·
+    <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
+    <a href="https://pypi.org/project/makystats/">PyPI</a></p>
+</footer>
+    </main>
+  </div>
+</div>
+</body>
+</html>

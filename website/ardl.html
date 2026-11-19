@@ -4,7 +4,7 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>ARDL · makystats</title>
-  <meta name="description" content="makystats documentation"/>
+  <meta name="description" content="makystats documentation — parameters and usage for ARDL"/>
   <link rel="stylesheet" href="css/style.css"/>
   <script src="js/nav.js" defer></script>
 </head>
@@ -29,19 +29,26 @@
       </button>
       <div class="nav-group-items" id="nav-models-items">
       <a class="nav-item" href="arma.html">ARMA</a>
-      <a class="nav-item" href="armagarch.html">ARMA-GARCH</a>
-      <a class="nav-item" href="var.html">VAR</a>
-      <a class="nav-item" href="vecm.html">VECM</a>
-      <a class="nav-item active" href="ardl.html">ARDL</a>
+<a class="nav-item" href="armagarch.html">ARMA-GARCH</a>
+<a class="nav-item" href="var.html">VAR</a>
+<a class="nav-item" href="vecm.html">VECM</a>
+<a class="nav-item active" href="ardl.html">ARDL</a>
       </div>
     </div>
-    <div class="nav-group" id="nav-tests">
+        <div class="nav-group" id="nav-tests">
       <button type="button" class="nav-group-toggle" id="nav-tests-toggle" aria-expanded="true" aria-controls="nav-tests-items">
-        <span>Tests</span>
+        <span>Stationarity</span>
         <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
       </button>
       <div class="nav-group-items" id="nav-tests-items">
-      <a class="nav-item" href="stationarity.html">Stationarity</a>
+      <a class="nav-item" href="stationarity.html">Overview</a>
+      <a class="nav-item" href="adf.html">ADF</a>
+      <a class="nav-item" href="adf-sequential.html">Sequential ADF</a>
+      <a class="nav-item" href="kpss.html">KPSS</a>
+      <a class="nav-item" href="phillips-perron.html">Phillips–Perron</a>
+      <a class="nav-item" href="dfgls.html">DF-GLS</a>
+      <a class="nav-item" href="zivot-andrews.html">Zivot–Andrews</a>
+      <a class="nav-item" href="engle-granger.html">Engle–Granger</a>
       </div>
     </div>
     <a class="nav-item" href="examples.html">Examples</a>
@@ -49,117 +56,93 @@
   <button type="button" class="sidebar-backdrop" id="sidebar-backdrop" aria-label="Close menu"></button>
   <div class="scroll">
     <main class="wrap">
+
 <h1>ARDL</h1>
-<p>Autoregressive distributed lag models: bounds test, UECM, restricted ECM,
-long-run coefficients, CUSUM stability and level forecasts.</p>
+<p>Autoregressive Distributed Lag models: levels ARDL, UECM, PSS bounds test,
+ECM representation, long-run coefficients and multi-step forecasts.</p>
 <p class="muted">
   README: <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/ardl/README.md"><code>makystats/ardl/README.md</code></a> ·
-  Formulas: <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/ardl/DOCUMENTATION.md"><code>DOCUMENTATION.md</code></a>
+  Guide: <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/ardl/DOCUMENTATION.md"><code>DOCUMENTATION.md</code></a> ·
+  Reference: <a href="https://www.statsmodels.org/stable/generated/statsmodels.tsa.ardl.ARDL.html">statsmodels ARDL</a>
 </p>
 
 <h2>Import</h2>
-<pre><code>from makystats import ardl, select_ardl_order
+<pre><code>from makystats import select_ardl_order, fit_from_ardl_order_table
+# or: from makystats.ardl import select_ardl_order
 </code></pre>
 
-<h2>Fit and bounds test</h2>
-<pre><code>res = ardl(y, x=x, lags=2, order=2, case=3).fit()
-print(res.summary())
-print(res.bounds)            # Wald F / q, t(α), Pesaran / Narayan CV
-print(res.long_run_table)
-
-# Order selection
-tab = select_ardl_order(y, x=x, maxlag=4, maxorder=2, case=3, ic="bic")
-# Per-variable maxorder: maxorder={"R": 2, "oil": 1}
-</code></pre>
-
-<h2>Cases (deterministic)</h2>
-<table>
-  <tr><th>case</th><th>Meaning</th></tr>
-  <tr><td>1</td><td>No constant, no trend</td></tr>
-  <tr><td>2</td><td>Restricted constant</td></tr>
-  <tr><td>3</td><td>Unrestricted constant</td></tr>
-  <tr><td>4</td><td>Restricted trend</td></tr>
-  <tr><td>5</td><td>Unrestricted constant and trend</td></tr>
-</table>
-<p><code>fixed=</code> regressors may be placed outside the cointegrating relation.</p>
-
-<h2>Main arguments</h2>
-<table>
-  <tr><th>Argument</th><th>Role</th></tr>
-  <tr><td><code>y</code>, <code>x</code></td><td>Dependent series and exogenous regressors (DataFrame / Series)</td></tr>
-  <tr><td><code>lags</code></td><td>Lags of <code>y</code> (int)</td></tr>
-  <tr><td><code>order</code></td><td>Lags of each column of <code>x</code>: int, list, or dict per variable</td></tr>
-  <tr><td><code>case</code></td><td>PSS deterministic case 1–5 (preferred over raw <code>trend</code>)</td></tr>
-  <tr><td><code>trend</code></td><td>Legacy deterministics if <code>case</code> is omitted</td></tr>
-  <tr><td><code>fixed</code></td><td>Regressors outside the long-run relation</td></tr>
-</table>
-<table>
-  <tr><th><code>select_ardl_order</code></th><th>Role</th></tr>
-  <tr><td><code>maxlag</code>, <code>maxorder</code></td><td>Search ranges for y-lags and x-orders (int or dict)</td></tr>
-  <tr><td><code>case</code></td><td>Fixed PSS case for the grid</td></tr>
-  <tr><td><code>ic</code></td><td><code>aic</code> / <code>bic</code> / <code>hqic</code></td></tr>
-  <tr><td><code>return_best</code></td><td>Also return a fitted model for the top order</td></tr>
-</table>
-
-
-<h2>Long run and plots</h2>
-<pre><code>df_lr = res.long_run_fitted()   # y, fitted_lr (y*), ect
-res.plot_long_run()
-res.plot_long_run_fitted()
-</code></pre>
-
-<h2>Restricted ECM</h2>
-<p>Careful removal of coefficients (often insignificant).
-General-to-specific selection implies pre-test bias.
-The <strong>bounds F</strong> remains that of the <strong>unrestricted</strong> model.</p>
-<pre><code>res.restrict_ecm(drop=["D.R.L1"])
-res.restrict_ecm(pvalue=0.10, keep_levels=True)  # protects α and x.L1
-</code></pre>
-
-<h2>Forecasts</h2>
-<p>Conditional on future paths of <code>x</code> (required if the model has exogenous regressors).</p>
-<pre><code>exog_f = np.full((10, 1), x.iloc[-1])
-
-fc = res.forecast(steps=10, exog_future=exog_f, conf_int=True)
-
-res.restrict_ecm(drop=["D.R.L1"])
-fc_e = res.forecast_ecm(
-    steps=10, exog_future=exog_f, restricted=True, level=True, conf_int=True
+<h2>Order selection — <code>select_ardl_order</code></h2>
+<pre><code>tab, best = select_ardl_order(
+    y, x,
+    maxlag=4, maxorder=4,
+    case=3,           # PSS deterministic case 1–5
+    ic="bic",
+    common_sample=True,  # default: all candidates on the same sample
+    refit_best=True,
 )
 </code></pre>
+
 <table>
-  <tr><th>Method</th><th>Content of forecast</th></tr>
-  <tr><td><code>forecast(...)</code></td><td>Levels (ARDL)</td></tr>
-  <tr><td><code>forecast_ecm(..., level=True)</code></td><td>Levels (default)</td></tr>
-  <tr><td><code>forecast_ecm(..., level=False)</code></td><td>Differences Δy</td></tr>
+  <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+  <tr><td><code>y</code></td><td>array_like / Series</td><td>Dependent variable (levels).</td></tr>
+  <tr><td><code>x</code></td><td>DataFrame / ndarray</td><td>Exogenous regressors (levels). Column names become coefficient labels.</td></tr>
+  <tr><td><code>maxlag</code></td><td>int, default 4</td><td>Maximum lag of <code>y</code> (AR part).</td></tr>
+  <tr><td><code>maxorder</code></td><td>int, dict or list, default 4</td><td>Maximum lag of each <code>x</code> column. A dict maps column → max lag; a list is per-column in order.</td></tr>
+  <tr><td><code>case</code></td><td>int 1–5, default 3</td><td>
+    PSS deterministic case:
+    <strong>1</strong> no intercept/trend;
+    <strong>2</strong> restricted intercept;
+    <strong>3</strong> unrestricted intercept;
+    <strong>4</strong> restricted trend;
+    <strong>5</strong> unrestricted trend.
+  </td></tr>
+  <tr><td><code>trend</code></td><td>str or None</td><td>Optional override of deterministics (otherwise implied by <code>case</code>).</td></tr>
+  <tr><td><code>fixed</code></td><td>optional</td><td>Regressors forced into every candidate (not searched over lags).</td></tr>
+  <tr><td><code>ic</code></td><td><code>'aic'|'bic'|'hqic'</code>, default <code>'bic'</code></td><td>Information criterion for ranking.</td></tr>
+  <tr><td><code>common_sample</code></td><td>bool, default <strong>True</strong></td><td>
+    If True, every candidate is estimated on the <strong>same</strong> effective sample
+    (<code>start = max(maxlag, max maxorder)</code>) so AIC/BIC/HQIC are comparable.
+    If False, each order uses its natural sample (old behaviour).
+  </td></tr>
+  <tr><td><code>refit_best</code></td><td>bool, default True</td><td>After selection, refit the winning order on its <em>natural</em> sample (full length for that order).</td></tr>
+  <tr><td><code>max_models</code></td><td>int, default 5000</td><td>Safety cap on the number of candidates evaluated.</td></tr>
+  <tr><td><code>verbose</code></td><td>bool</td><td>Progress messages.</td></tr>
 </table>
 
-<h2>Results (after <code>fit</code>)</h2>
+<p><code>fit_from_ardl_order_table(tab, rank=1)</code> re-estimates a row of the order table
+without re-running the grid (aligned with <code>return_best</code>).</p>
+
+<h2>Fitted model — useful attributes</h2>
 <table>
   <tr><th>Attribute / method</th><th>Content</th></tr>
-  <tr><td><code>params</code>, <code>coef</code>, <code>coefficients</code></td><td>ARDL coefficient Series</td></tr>
-  <tr><td><code>bse</code>, <code>pvalues</code>, <code>tvalues</code></td><td>Inference</td></tr>
-  <tr><td><code>coef_table</code></td><td>Coeff / Std.Err / t / Prob.</td></tr>
-  <tr><td><code>cov_params()</code></td><td>OLS covariance</td></tr>
-  <tr><td><code>conf_int(alpha=0.05)</code></td><td>Coefficient CIs</td></tr>
-  <tr><td><code>aic</code>, <code>bic</code>, <code>hqic</code>, <code>llf</code></td><td>ICs and log-likelihood</td></tr>
-  <tr><td><code>nobs</code>, <code>df_model</code>, <code>df_resid</code>, <code>sigma2</code></td><td>Sizes and variance</td></tr>
-  <tr><td><code>rsquared</code>, <code>rsquared_adj</code></td><td>Fit quality</td></tr>
-  <tr><td><code>residuals</code>, <code>fitted_values</code></td><td>Indexed series</td></tr>
-  <tr><td><code>long_run</code>, <code>long_run_table</code></td><td>Cointegrating equation only (restricted det. + x)</td></tr>
-  <tr><td><code>long_run_levels</code>, <code>long_run_levels_table</code></td><td>Full levels-equation multipliers (incl. unrestricted det.)</td></tr>
+  <tr><td><code>summary()</code></td><td>Coefficient table, diagnostics</td></tr>
+  <tr><td><code>bounds_test</code> / F, t</td><td>PSS bounds statistics (F = Wald/q)</td></tr>
+  <tr><td><code>long_run</code>, <code>long_run_levels</code></td><td>Long-run coefficients (CE scale / levels)</td></tr>
+  <tr><td><code>ecm</code> / <code>restrict_ecm</code></td><td>Error-correction form (Bardsen when drop empty)</td></tr>
+  <tr><td><code>forecast</code> / <code>forecast_ecm</code></td><td>Level or difference forecasts</td></tr>
 </table>
 
-<h2>Diagnostics</h2>
-<pre><code>res.diagnostic_summary(lags_lb=10, nlags_arch=5)
-res.test_normality()
-res.test_heteroskedasticity(5)
-res.test_serial_correlation(10)
-res.plot_diagnostics()
-res.plot_cusum(alpha=0.05)   # alpha=0.05 or 0.10
+<pre><code># Bounds + long-run
+print(best.summary())
+print(best.long_run)
+
+# Forecast levels
+print(best.forecast(steps=8, conf_int=True))
 </code></pre>
+
+<h2>Notes</h2>
+<ul>
+  <li><code>common_sample=True</code> (default since 0.1.8) is the recommended setting for fair IC comparison across lag orders.</li>
+  <li>Cases 3–5 control the intercept/trend placement in the UECM / ECM consistently with the PSS tables.</li>
+  <li>For full UECM/ECM dating and restricted ECM details, see the package README.</li>
+</ul>
+
+<nav class="page-nav" aria-label="Page">
+  <a class="page-nav-link prev" href="vecm.html"><span class="page-nav-dir">← Previous</span><span class="page-nav-title">VECM</span></a>
+  <a class="page-nav-link next" href="stationarity.html"><span class="page-nav-dir">Next →</span><span class="page-nav-title">Stationarity</span></a>
+</nav>
 <footer>
-  <p>makystats v0.1.7 · MIT License ·
+  <p>makystats v0.1.8 · MIT License ·
     <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
     <a href="https://pypi.org/project/makystats/">PyPI</a> ·
     Author: ANDRIANITOVIANA Lauret Boris</p>

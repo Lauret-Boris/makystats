@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>ADF · makystats</title>
+  <meta name="description" content="makystats — ADF (v0.1.8)"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <script src="js/nav.js" defer></script>
+</head>
+<body>
+<header class="topbar">
+  <button type="button" class="menu-btn" id="menu-btn" aria-controls="sidebar" aria-expanded="true" aria-label="Menu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+  <a class="brand" href="index.html">makystats</a>
+  <a class="ext" href="https://github.com/Lauret-Boris/makystats" rel="noopener">GitHub</a>
+  <a class="ext" href="https://pypi.org/project/makystats/" rel="noopener">PyPI</a>
+  <span class="lang"><a href="fr/adf.html">FR</a> · EN</span>
+</header>
+<div class="body-row">
+  <aside class="sidebar" id="sidebar">
+    <a class="nav-item" href="index.html">Home</a>
+    <a class="nav-item" href="install.html">Install</a>
+    <div class="nav-group" id="nav-models">
+      <button type="button" class="nav-group-toggle" id="nav-models-toggle" aria-expanded="true" aria-controls="nav-models-items">
+        <span>Models</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="nav-group-items" id="nav-models-items">
+      <a class="nav-item" href="arma.html">ARMA</a>
+      <a class="nav-item" href="armagarch.html">ARMA-GARCH</a>
+      <a class="nav-item" href="var.html">VAR</a>
+      <a class="nav-item" href="vecm.html">VECM</a>
+      <a class="nav-item" href="ardl.html">ARDL</a>
+      </div>
+    </div>
+    <div class="nav-group" id="nav-tests">
+      <button type="button" class="nav-group-toggle" id="nav-tests-toggle" aria-expanded="true" aria-controls="nav-tests-items">
+        <span>Stationarity</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="nav-group-items" id="nav-tests-items">
+      <a class="nav-item" href="stationarity.html">Overview</a>
+      <a class="nav-item active" href="adf.html">ADF</a>
+      <a class="nav-item" href="adf-sequential.html">Sequential ADF</a>
+      <a class="nav-item" href="kpss.html">KPSS</a>
+      <a class="nav-item" href="phillips-perron.html">Phillips–Perron</a>
+      <a class="nav-item" href="dfgls.html">DF-GLS</a>
+      <a class="nav-item" href="zivot-andrews.html">Zivot–Andrews</a>
+      <a class="nav-item" href="engle-granger.html">Engle–Granger</a>
+      </div>
+    </div>
+    <a class="nav-item" href="examples.html">Examples</a>
+  </aside>
+  <button type="button" class="sidebar-backdrop" id="sidebar-backdrop" aria-label="Close menu"></button>
+  <div class="scroll">
+    <main class="wrap">
+
+<h1>ADF (Augmented Dickey–Fuller)</h1>
+<p>Native ADF unit-root test with MacKinnon p-values. Lag selection by AIC/BIC
+is done on a <strong>common sample</strong> so information criteria are comparable.</p>
+
+<h2>Import</h2>
+<pre><code>from makystats import adf
+</code></pre>
+
+<h2>Quick start</h2>
+<pre><code>res = adf(y, regression="ct", maxlag=None, autolag="AIC")
+print(res.summary())
+print(res.statistic, res.pvalue, res.lags)
+print(res.ols.summary())   # ADF regression table
+</code></pre>
+
+<h2>Parameters</h2>
+<table>
+  <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+  <tr><td><code>y</code></td><td>array_like / Series</td><td>Series to test. Time index is kept for plots when available.</td></tr>
+  <tr><td><code>maxlag</code></td><td>int or None</td><td>Maximum augmentation lag. Default: rule of thumb from sample size.</td></tr>
+  <tr><td><code>regression</code></td><td>str, default <code>'c'</code></td><td>
+    Deterministics in the ADF regression:
+    <code>'n'</code> none, <code>'c'</code> constant, <code>'ct'</code> constant + trend,
+    <code>'ctt'</code> constant + trend + quadratic.
+  </td></tr>
+  <tr><td><code>autolag</code></td><td>str or None, default <code>'AIC'</code></td><td>
+    <code>'AIC'</code>, <code>'BIC'</code>, or <code>None</code>/<code>'NONE'</code> (use fixed <code>maxlag</code>).
+    Candidates are compared on a common estimation sample.
+  </td></tr>
+</table>
+
+<h2>Results</h2>
+<table>
+  <tr><th>Attribute / method</th><th>Content</th></tr>
+  <tr><td><code>statistic</code>, <code>pvalue</code></td><td>τ statistic and MacKinnon p-value</td></tr>
+  <tr><td><code>critical_values</code></td><td>Dict of critical values</td></tr>
+  <tr><td><code>lags</code>, <code>nobs</code></td><td>Selected lag and effective sample size</td></tr>
+  <tr><td><code>summary()</code></td><td>Text summary</td></tr>
+  <tr><td><code>ols</code> / <code>regression</code></td><td>Inspectable ADF regression</td></tr>
+  <tr><td><code>reject_null(alpha)</code></td><td>Boolean decision at level α</td></tr>
+</table>
+
+
+<nav class="page-nav" aria-label="Page">
+  <a class="page-nav-link prev" href="stationarity.html"><span class="page-nav-dir">← Previous</span><span class="page-nav-title">Overview</span></a>
+  <a class="page-nav-link next" href="adf-sequential.html"><span class="page-nav-dir">Next →</span><span class="page-nav-title">Sequential ADF</span></a>
+</nav>
+<footer>
+  <p>makystats v0.1.8 · MIT License ·
+    <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
+    <a href="https://pypi.org/project/makystats/">PyPI</a></p>
+</footer>
+    </main>
+  </div>
+</div>
+</body>
+</html>

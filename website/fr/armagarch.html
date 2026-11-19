@@ -4,7 +4,7 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>ARMA-GARCH · makystats</title>
-  <meta name="description" content="makystats documentation"/>
+  <meta name="description" content="makystats ARMA-GARCH parameters and usage (v0.1.8)"/>
   <link rel="stylesheet" href="../css/style.css"/>
   <script src="../js/nav.js" defer></script>
 </head>
@@ -29,99 +29,136 @@
       </button>
       <div class="nav-group-items" id="nav-models-items">
       <a class="nav-item" href="arma.html">ARMA</a>
-      <a class="nav-item active" href="armagarch.html">ARMA-GARCH</a>
-      <a class="nav-item" href="var.html">VAR</a>
-      <a class="nav-item" href="vecm.html">VECM</a>
-      <a class="nav-item" href="ardl.html">ARDL</a>
+<a class="nav-item active" href="armagarch.html">ARMA-GARCH</a>
+<a class="nav-item" href="var.html">VAR</a>
+<a class="nav-item" href="vecm.html">VECM</a>
+<a class="nav-item" href="ardl.html">ARDL</a>
       </div>
     </div>
-    <div class="nav-group" id="nav-tests">
+        <div class="nav-group" id="nav-tests">
       <button type="button" class="nav-group-toggle" id="nav-tests-toggle" aria-expanded="true" aria-controls="nav-tests-items">
-        <span>Tests</span>
+        <span>Stationnarité</span>
         <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
       </button>
       <div class="nav-group-items" id="nav-tests-items">
-      <a class="nav-item" href="stationarity.html">Stationnarité</a>
+      <a class="nav-item" href="stationarity.html">Vue d’ensemble</a>
+      <a class="nav-item" href="adf.html">ADF</a>
+      <a class="nav-item" href="adf-sequential.html">ADF séquentiel</a>
+      <a class="nav-item" href="kpss.html">KPSS</a>
+      <a class="nav-item" href="phillips-perron.html">Phillips–Perron</a>
+      <a class="nav-item" href="dfgls.html">DF-GLS</a>
+      <a class="nav-item" href="zivot-andrews.html">Zivot–Andrews</a>
+      <a class="nav-item" href="engle-granger.html">Engle–Granger</a>
       </div>
     </div>
     <a class="nav-item" href="examples.html">Exemples</a>
   </aside>
-  <button type="button" class="sidebar-backdrop" id="sidebar-backdrop" aria-label="Close menu"></button>
+  <button type="button" class="sidebar-backdrop" id="sidebar-backdrop" aria-label="Close"></button>
   <div class="scroll">
     <main class="wrap">
+
 <h1>ARMA–GARCH</h1>
-<p>Maximum de vraisemblance jointe d’une moyenne linéaire (ARMA / ARX / HAR / …)
-et d’une variance conditionnelle (GARCH, GJR, EGARCH, APARCH, FIGARCH)
-sous innovations normale, Student-t, skew-t ou GED.</p>
-<p class="muted">
-  README : <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/armagarch/README.md"><code>makystats/armagarch/README.md</code></a> ·
-  Guide technique : <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/armagarch/DOCUMENTATION.md"><code>DOCUMENTATION.md</code></a>
-</p>
+<p>MLE conjoint d’une moyenne linéaire et d’une variance conditionnelle
+(GARCH, GJR, EGARCH, APARCH, FIGARCH) sous innovations normale, t, skew-t ou GED.</p>
 
-<h2>Démarrage rapide</h2>
-<pre><code>from makystats import arma_garch, select_order
-res = arma_garch(y, mean="AR", ar=1, ma=1, vol="GARCH", trend="c").fit()
-print(res.coef_table)
-print(res.forecast(h=5))
-res.plot_diagnostics(lags=20)
-tab = select_order(ylog, p_range=range(0, 3), q_range=range(0, 2),
-                   r_range=[1], s_range=[1], d=1,
-                   seasonal_order=(0, 1, 1, 12), criterion="aic")
+<h2>Réglages recommandés</h2>
+<table>
+  <tr><th>Objectif</th><th>Réglages typiques</th><th>Effet</th></tr>
+  <tr>
+    <td><strong>MLE non contrainte</strong> (défaut)</td>
+    <td><code>nonneg_var=False</code>, <code>domain_repair=True</code>, <code>n_starts=1</code></td>
+    <td>α, β libres. Si l’optimum libre sort hors domaine classique, une relance contrainte peut le remplacer.</td>
+  </tr>
+  <tr>
+    <td><strong>Optimum libre strict</strong></td>
+    <td><code>domain_repair=False</code>, <code>nonneg_var=False</code></td>
+    <td>Ne remplace jamais la solution libre ; pas de <code>UserWarning</code> de domaine.</td>
+  </tr>
+  <tr>
+    <td><strong>Variance contrainte</strong> (α, β ≥ 0)</td>
+    <td><code>nonneg_var=True</code>, optionnel <code>stationary_var=True</code></td>
+    <td>α, β forcés ≥ 0 ; persistance optionnelle &lt; 1. Proche des solveurs GARCH contraints (ex. <code>arch</code>).</td>
+  </tr>
+  <tr>
+    <td><strong>SE robustes</strong></td>
+    <td><code>cov_type='qml'</code> / <code>'robust'</code></td>
+    <td>Sandwich Bollerslev–Wooldridge (QMLE).</td>
+  </tr>
+  <tr>
+    <td><strong>Moins dépendant du départ</strong></td>
+    <td><code>n_starts=4</code></td>
+    <td>Plusieurs départs (α, β) ; chacun est poli et réparé ; meilleure LL <em>finale</em>.</td>
+  </tr>
+  <tr>
+    <td><strong>Moyenne type statsmodels</strong></td>
+    <td><code>trend='c'|'ct'|'n'</code>, <code>d=</code>, <code>seasonal_order=</code></td>
+    <td>Déterministes / intégration dans l’esprit ARIMA ; variance = GARCH makystats.</td>
+  </tr>
+</table>
+<pre><code># Défaut non contraint
+res = arma_garch(y, mean="AR", ar=1, ma=1, vol="GARCH").fit()
+
+# Variance contrainte + SE sandwich
+res = arma_garch(y, vol="GARCH", nonneg_var=True, stationary_var=True,
+                 cov_type="qml").fit()
+
+# Multi-départ
+res = arma_garch(y, vol="GARCH", n_starts=4).fit()
 </code></pre>
 
-<h2>API en bref</h2>
+<h2>Paramètres (<code>arma_garch</code>)</h2>
 <table>
-  <tr><th>Argument</th><th>Rôle</th></tr>
-  <tr><td><code>mean</code></td><td><code>Constant</code>, <code>Zero</code>, <code>AR</code>, <code>ARX</code>, <code>ARMAX</code>, <code>HAR</code>, <code>HARX</code>, <code>LS</code></td></tr>
-  <tr><td><code>in_mean</code></td><td>GARCH-M : <code>None</code> / <code>sigma</code> / <code>var</code> / <code>log</code> (coef <code>archm</code>)</td></tr>
-  <tr><td><code>trend</code></td><td><code>n</code> / <code>c</code> / <code>t</code> / <code>ct</code></td></tr>
-  <tr><td><code>vol</code></td><td><code>GARCH</code>, <code>ARCH</code>, <code>GJR</code>/<code>TARCH</code>, <code>EGARCH</code>, <code>APARCH</code>, <code>FIGARCH</code></td></tr>
-  <tr><td><code>dist</code></td><td><code>normal</code>, <code>t</code>, <code>skewt</code>, <code>ged</code></td></tr>
-  <tr><td><code>ar</code> / <code>ma</code></td><td>Ordres ou listes de lags (ARMA creux). Coefficients <strong>libres</strong> (pas de borne ±0,99)</td></tr>
-  <tr><td><code>r</code> / <code>s</code></td><td>Ordres ARCH / GARCH (<code>r=s=0</code> → variance constante)</td></tr>
-  <tr><td><code>power</code></td><td>Puissance APARCH δ (défaut 2.0)</td></tr>
-  <tr><td><code>threshold_order</code></td><td>Ordre d’asymétrie GJR/TARCH (défaut = <code>r</code>)</td></tr>
-  <tr><td><code>d</code></td><td>Différences régulières 0, 1 ou 2</td></tr>
-  <tr><td><code>seasonal_order</code></td><td><code>(P, D, Q, s)</code> saisonnalité additive de la moyenne</td></tr>
-  <tr><td><code>nonneg_var</code></td><td><code>True</code> → impose α, β ≥ 0 (optionnel ; défaut libre)</td></tr>
-  <tr><td><code>stationary_var</code></td><td><code>True</code> → impose persistance de variance &lt; 1 (GARCH : α+β ; GJR : α+γ/2+β)</td></tr>
-  <tr><td><code>egarch_form</code></td><td><code>centered</code> (défaut) ou <code>raw</code> pour ω EGARCH</td></tr>
-  <tr><td><code>cov_type</code></td><td><code>opg</code> (défaut) ou SE basés sur la Hessienne</td></tr>
-  <tr><td><code>backcast</code></td><td>λ du backcast exponentiel de variance (défaut 0.7)</td></tr>
-  <tr><td><code>center</code></td><td>Centrer <code>y</code> pendant l’optimisation (défaut <code>True</code>)</td></tr>
+  <tr><th>Paramètre</th><th>Type</th><th>Description</th></tr>
+  <tr><td><code>y</code>, <code>x</code></td><td>série / DataFrame</td><td>Série dépendante et exogènes optionnelles.</td></tr>
+  <tr><td><code>mean</code></td><td>str</td><td>Voir alias ci-dessous.</td></tr>
+  <tr><td><code>ar</code> / <code>ma</code></td><td>int ou liste</td><td>Ordres ou retards creux. Coefficients libres.</td></tr>
+  <tr><td><code>vol</code></td><td>str</td><td><code>GARCH</code>, <code>ARCH</code>, <code>GJR</code>/<code>TARCH</code>, <code>EGARCH</code>, <code>APARCH</code>, <code>FIGARCH</code>.</td></tr>
+  <tr><td><code>p</code> / <code>o</code> / <code>q</code></td><td>int</td><td>Ordre ARCH, asymétrie (GJR), ordre GARCH.</td></tr>
+  <tr><td><code>dist</code></td><td>str</td><td><code>normal</code>, <code>t</code>, <code>skewt</code>, <code>ged</code>.</td></tr>
+  <tr><td><code>df</code></td><td>float, optionnel</td><td>Degrés de liberté fixés (ν non estimé). Sinon ν est estimé.</td></tr>
+  <tr><td><code>trend</code></td><td><code>'n'|'c'|'t'|'ct'</code></td><td>Déterministes de moyenne (codage type statsmodels).</td></tr>
+  <tr><td><code>nonneg_var</code></td><td>bool, défaut False</td><td>Force α, β ≥ 0 via reparamétrisation exp.</td></tr>
+  <tr><td><code>stationary_var</code></td><td>bool, défaut False</td><td>Force la persistance de variance &lt; 1.</td></tr>
+  <tr><td><code>domain_repair</code></td><td>bool, défaut <strong>True</strong></td><td>Relance contrainte si l’optimum libre sort hors domaine. <code>False</code> = garder la solution libre.</td></tr>
+  <tr><td><code>n_starts</code></td><td>int, défaut <strong>1</strong></td><td>Nombre de départs de variance. Chaque départ est poli et réparé ; meilleure LL <strong>finale</strong>.</td></tr>
+  <tr><td><code>cov_type</code></td><td>str</td><td><code>opg</code> (défaut), <code>hessian</code>, <code>qml</code>/<code>robust</code>.</td></tr>
+  <tr><td><code>start</code></td><td><code>'precise'|'fast'</code></td><td>Départ moyenne : pré-fit ARIMA ou Yule–Walker / Hannan–Rissanen.</td></tr>
+  <tr><td><code>backcast</code></td><td>float, défaut 0.7</td><td>λ du backcast exponentiel de variance.</td></tr>
 </table>
 
-<h2>Après <code>fit()</code></h2>
+<h2>Alias de <code>mean</code></h2>
 <table>
-  <tr><th>Attribut</th><th>Contenu</th></tr>
-  <tr><td><code>coef_table</code>, <code>params</code>, <code>se</code></td><td>Coefficients et inférence</td></tr>
-  <tr><td><code>loglik</code>, <code>aic</code>, <code>bic</code></td><td>Vraisemblance et critères d’information</td></tr>
-  <tr><td><code>ar_roots</code>, <code>ma_roots</code></td><td>Racines inverses AR/MA (module &lt; 1 pour stationnarité / invertibilité)</td></tr>
-  <tr><td><code>ar_stationary</code>, <code>ma_invertible</code></td><td>Diagnostics booléens issus des racines</td></tr>
-  <tr><td><code>converged</code></td><td>Convergence pratique (un « precision loss » SciPy peut rester acceptable)</td></tr>
-  <tr><td><code>optimization</code></td><td>Dict : <code>success</code> SciPy brut, <code>message</code>, <code>gnorm</code>, <code>convergence_reason</code>, …</td></tr>
-  <tr><td><code>fit_result</code></td><td><code>OptimizeResult</code> SciPy brut</td></tr>
+  <tr><th>Valeur</th><th>Signification</th></tr>
+  <tr><td><code>Constant</code> / <code>Zero</code></td><td>Constante seule / sans constante.</td></tr>
+  <tr><td><code>AR</code> / <code>ARMA</code></td><td>AR et MA optionnel <strong>sans</strong> X. <code>ARMA</code> est un alias de <code>AR</code>.</td></tr>
+  <tr><td><code>ARX</code></td><td>AR + X (pas de MA). Exige <code>x=</code>.</td></tr>
+  <tr><td><code>ARMAX</code></td><td>AR + MA + X. Exige <code>x=</code>.</td></tr>
+  <tr><td><code>HAR</code> / <code>HARX</code> / <code>LS</code></td><td>Horizons HAR ou exogènes linéaires.</td></tr>
 </table>
-<p class="muted">Polynômes AR/MA alignés sur le filtre : Φ(z)=1−Σφz<sup>k</sup>, Θ(z)=1+Σθz<sup>k</sup>. Prévisions de variance multi-pas : moments sous la densité estimée (normale / t / skew-t / GED).</p>
 
-<h2>VaR / ES</h2>
-<pre><code>res.var(alpha=0.05, h=1)
-res.expected_shortfall(alpha=0.05)
-res.var_series(alpha=0.05)
-res.var_backtest(alpha=0.05)
-res.plot_var(alphas=(0.05, 0.01))
-</code></pre>
+<h2>Réparation de domaine</h2>
+<p>Si l’optimum libre sort avec α&nbsp;&lt;&nbsp;0, β&nbsp;&lt;&nbsp;0 ou (GJR) α+γ&nbsp;&lt;&nbsp;0,
+<code>fit</code> relance une optimisation contrainte (sauf <code>domain_repair=False</code>).
+Flags : <code>domain_retry</code>, <code>domain_retry_accepted</code>.</p>
+<p>Lorsqu’une relance contrainte est <strong>acceptée</strong>, <code>res.converged</code> est réévalué sur la solution réparée (le <code>polish_delta</code> de la solution libre n’est pas réutilisé), afin de ne pas signaler un échec à tort.</p>
 
-<div class="note">
-  BFGS non contraint + reparamétrisation ; écarts-types OPG par défaut.
-  Détail technique : <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/armagarch/DOCUMENTATION.md">DOCUMENTATION.md</a>.
-</div>
+<h2>Multi-départ</h2>
+<p>Avec <code>n_starts&gt;1</code>, chaque départ passe par polissage + réparation de domaine ;
+le classement se fait sur la LL <strong>finale</strong>
+(<code>selection='final_loglik_after_polish_and_repair'</code>).</p>
+
+<p><code>select_order(..., start=None)</code> : grille en <code>'fast'</code>, <code>return_best</code> en <code>'precise'</code>.
+Un <code>start=</code> explicite s’applique aux deux.</p>
+
+
+<nav class="page-nav" aria-label="Page">
+  <a class="page-nav-link prev" href="arma.html"><span class="page-nav-dir">← Précédent</span><span class="page-nav-title">ARMA</span></a>
+  <a class="page-nav-link next" href="var.html"><span class="page-nav-dir">Suivant →</span><span class="page-nav-title">VAR</span></a>
+</nav>
 <footer>
-  <p>makystats v0.1.7 · Licence MIT ·
+  <p>makystats v0.1.8 · MIT License ·
     <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
-    <a href="https://pypi.org/project/makystats/">PyPI</a> ·
-    Auteur : ANDRIANITOVIANA Lauret Boris</p>
-  <p class="muted">Site de documentation uniquement — le code source est dans le dépôt et sur PyPI, pas sur ces pages.</p>
+    <a href="https://pypi.org/project/makystats/">PyPI</a></p>
 </footer>
     </main>
   </div>

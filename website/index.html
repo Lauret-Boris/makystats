@@ -35,13 +35,20 @@
       <a class="nav-item" href="ardl.html">ARDL</a>
       </div>
     </div>
-    <div class="nav-group" id="nav-tests">
+        <div class="nav-group" id="nav-tests">
       <button type="button" class="nav-group-toggle" id="nav-tests-toggle" aria-expanded="true" aria-controls="nav-tests-items">
-        <span>Tests</span>
+        <span>Stationarity</span>
         <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
       </button>
       <div class="nav-group-items" id="nav-tests-items">
-      <a class="nav-item" href="stationarity.html">Stationarity</a>
+      <a class="nav-item" href="stationarity.html">Overview</a>
+      <a class="nav-item" href="adf.html">ADF</a>
+      <a class="nav-item" href="adf-sequential.html">Sequential ADF</a>
+      <a class="nav-item" href="kpss.html">KPSS</a>
+      <a class="nav-item" href="phillips-perron.html">Phillips–Perron</a>
+      <a class="nav-item" href="dfgls.html">DF-GLS</a>
+      <a class="nav-item" href="zivot-andrews.html">Zivot–Andrews</a>
+      <a class="nav-item" href="engle-granger.html">Engle–Granger</a>
       </div>
     </div>
     <a class="nav-item" href="examples.html">Examples</a>
@@ -54,7 +61,7 @@
   <h1>makystats</h1>
   <p class="lead">Econometrics toolkit for Python — ARMA, ARMA–GARCH (MLE), VAR, VECM / Johansen, ARDL (bounds test, ECM), and unit-root / stationarity tests.</p>
   <div class="badges">
-    <span class="badge">v0.1.7</span>
+    <span class="badge">v0.1.8</span>
     <span class="badge">Python ≥ 3.9</span>
     <span class="badge">MIT</span>
     <span class="badge">pip install makystats</span>
@@ -63,11 +70,11 @@
 
 <h2>Modules</h2>
 <div class="grid">
-  <div class="card"><h3><a href="arma.html">ARMA</a></h3><p>Homoskedastic AR / ARMA / ARIMA / SARIMA. Order selection, diagnostics, level forecasts with index preservation.</p></div>
-  <div class="card"><h3><a href="armagarch.html">ARMA–GARCH</a></h3><p>Joint MLE: mean + GARCH / GJR / EGARCH / APARCH / FIGARCH. VaR &amp; ES, seasonal mean.</p></div>
+  <div class="card"><h3><a href="arma.html">ARMA</a></h3><p>Homoskedastic AR / ARMA / ARIMA (optional exact Kalman likelihood) / SARIMA. Exact multi-step forecast SE (MA∞ ψ-weights), order selection, diagnostics.</p></div>
+  <div class="card"><h3><a href="armagarch.html">ARMA–GARCH</a></h3><p>Joint MLE: mean + GARCH / GJR / EGARCH / APARCH / FIGARCH. Domain repair, VaR &amp; ES, seasonal mean.</p></div>
   <div class="card"><h3><a href="var.html">VAR</a></h3><p>Native OLS VAR, IRF, FEVD, Granger causality, order selection.</p></div>
   <div class="card"><h3><a href="vecm.html">VECM</a></h3><p>Johansen cointegration, MHM p-values, eight deterministic cases, forecasts.</p></div>
-  <div class="card"><h3><a href="ardl.html">ARDL</a></h3><p>Bounds test, UECM, restricted ECM, long-run coefficients, CUSUM stability.</p></div>
+  <div class="card"><h3><a href="ardl.html">ARDL</a></h3><p>Bounds test, UECM, restricted ECM, common-sample order selection, long-run coefficients, CUSUM.</p></div>
   <div class="card"><h3><a href="stationarity.html">Stationarity</a></h3><p>ADF, sequential ADF, KPSS, Phillips–Perron, DF-GLS, Zivot–Andrews, Engle–Granger.</p></div>
 
 </div>
@@ -85,8 +92,13 @@ pip install "makystats[plot]"</code></pre>
   (<code>README.md</code> / <code>DOCUMENTATION.md</code>).
   Formula images stay in the repository <code>docs/</code> folder (not the Pages root).
 </div>
+
+<nav class="page-nav" aria-label="Page">
+  <span class="page-nav-link prev empty"></span>
+  <a class="page-nav-link next" href="install.html"><span class="page-nav-dir">Next →</span><span class="page-nav-title">Install</span></a>
+</nav>
 <footer>
-  <p>makystats v0.1.7 · MIT License ·
+  <p>makystats v0.1.8 · MIT License ·
     <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
     <a href="https://pypi.org/project/makystats/">PyPI</a> ·
     Author: ANDRIANITOVIANA Lauret Boris</p>
