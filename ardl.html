@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>ARDL · makystats</title>
+  <meta name="description" content="makystats documentation — parameters and usage for ARDL"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <script src="js/nav.js" defer></script>
+</head>
+<body>
+<header class="topbar">
+  <button type="button" class="menu-btn" id="menu-btn" aria-controls="sidebar" aria-expanded="true" aria-label="Menu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+  <a class="brand" href="index.html">makystats</a>
+  <a class="ext" href="https://github.com/Lauret-Boris/makystats" rel="noopener">GitHub</a>
+  <a class="ext" href="https://pypi.org/project/makystats/" rel="noopener">PyPI</a>
+  <span class="lang"><a href="fr/ardl.html">FR</a> · EN</span>
+</header>
+<div class="body-row">
+  <aside class="sidebar" id="sidebar">
+    <a class="nav-item" href="index.html">Home</a>
+    <a class="nav-item" href="install.html">Install</a>
+    <div class="nav-group" id="nav-models">
+      <button type="button" class="nav-group-toggle" id="nav-models-toggle" aria-expanded="true" aria-controls="nav-models-items">
+        <span>Models</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="nav-group-items" id="nav-models-items">
+      <a class="nav-item" href="arma.html">ARMA</a>
+<a class="nav-item" href="armagarch.html">ARMA-GARCH</a>
+<a class="nav-item" href="var.html">VAR</a>
+<a class="nav-item" href="vecm.html">VECM</a>
+<a class="nav-item active" href="ardl.html">ARDL</a>
+      </div>
+    </div>
+        <div class="nav-group" id="nav-tests">
+      <button type="button" class="nav-group-toggle" id="nav-tests-toggle" aria-expanded="true" aria-controls="nav-tests-items">
+        <span>Stationarity</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="nav-group-items" id="nav-tests-items">
+      <a class="nav-item" href="stationarity.html">Overview</a>
+      <a class="nav-item" href="adf.html">ADF</a>
+      <a class="nav-item" href="adf-sequential.html">Sequential ADF</a>
+      <a class="nav-item" href="kpss.html">KPSS</a>
+      <a class="nav-item" href="phillips-perron.html">Phillips–Perron</a>
+      <a class="nav-item" href="dfgls.html">DF-GLS</a>
+      <a class="nav-item" href="zivot-andrews.html">Zivot–Andrews</a>
+      <a class="nav-item" href="engle-granger.html">Engle–Granger</a>
+      </div>
+    </div>
+    <a class="nav-item" href="examples.html">Examples</a>
+  </aside>
+  <button type="button" class="sidebar-backdrop" id="sidebar-backdrop" aria-label="Close menu"></button>
+  <div class="scroll">
+    <main class="wrap">
+
+<h1>ARDL</h1>
+<p>Autoregressive Distributed Lag models: levels ARDL, UECM, PSS bounds test,
+ECM representation, long-run coefficients and multi-step forecasts.</p>
+<p class="muted">
+  README: <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/ardl/README.md"><code>makystats/ardl/README.md</code></a> ·
+  Guide: <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/ardl/DOCUMENTATION.md"><code>DOCUMENTATION.md</code></a> ·
+  Reference: <a href="https://www.statsmodels.org/stable/generated/statsmodels.tsa.ardl.ARDL.html">statsmodels ARDL</a>
+</p>
+
+<h2>Import</h2>
+<pre><code>from makystats import select_ardl_order, fit_from_ardl_order_table
+# or: from makystats.ardl import select_ardl_order
+</code></pre>
+
+<h2>Order selection — <code>select_ardl_order</code></h2>
+<pre><code>tab, best = select_ardl_order(
+    y, x,
+    maxlag=4, maxorder=4,
+    case=3,           # PSS deterministic case 1–5
+    ic="bic",
+    common_sample=True,  # default: all candidates on the same sample
+    refit_best=True,
+)
+</code></pre>
+
+<table>
+  <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+  <tr><td><code>y</code></td><td>array_like / Series</td><td>Dependent variable (levels).</td></tr>
+  <tr><td><code>x</code></td><td>DataFrame / ndarray</td><td>Exogenous regressors (levels). Column names become coefficient labels.</td></tr>
+  <tr><td><code>maxlag</code></td><td>int, default 4</td><td>Maximum lag of <code>y</code> (AR part).</td></tr>
+  <tr><td><code>maxorder</code></td><td>int, dict or list, default 4</td><td>Maximum lag of each <code>x</code> column. A dict maps column → max lag; a list is per-column in order.</td></tr>
+  <tr><td><code>case</code></td><td>int 1–5, default 3</td><td>
+    PSS deterministic case:
+    <strong>1</strong> no intercept/trend;
+    <strong>2</strong> restricted intercept;
+    <strong>3</strong> unrestricted intercept;
+    <strong>4</strong> restricted trend;
+    <strong>5</strong> unrestricted trend.
+  </td></tr>
+  <tr><td><code>trend</code></td><td>str or None</td><td>Optional override of deterministics (otherwise implied by <code>case</code>).</td></tr>
+  <tr><td><code>fixed</code></td><td>optional</td><td>Regressors forced into every candidate (not searched over lags).</td></tr>
+  <tr><td><code>ic</code></td><td><code>'aic'|'bic'|'hqic'</code>, default <code>'bic'</code></td><td>Information criterion for ranking.</td></tr>
+  <tr><td><code>common_sample</code></td><td>bool, default <strong>True</strong></td><td>
+    If True, every candidate is estimated on the <strong>same</strong> effective sample
+    (<code>start = max(maxlag, max maxorder)</code>) so AIC/BIC/HQIC are comparable.
+    If False, each order uses its natural sample (old behaviour).
+  </td></tr>
+  <tr><td><code>refit_best</code></td><td>bool, default True</td><td>After selection, refit the winning order on its <em>natural</em> sample (full length for that order).</td></tr>
+  <tr><td><code>max_models</code></td><td>int, default 5000</td><td>Safety cap on the number of candidates evaluated.</td></tr>
+  <tr><td><code>verbose</code></td><td>bool</td><td>Progress messages.</td></tr>
+</table>
+
+<p><code>fit_from_ardl_order_table(tab, rank=1)</code> re-estimates a row of the order table
+without re-running the grid (aligned with <code>return_best</code>).</p>
+
+<h2>Fitted model — useful attributes</h2>
+<table>
+  <tr><th>Attribute / method</th><th>Content</th></tr>
+  <tr><td><code>summary()</code></td><td>Coefficient table, diagnostics</td></tr>
+  <tr><td><code>bounds_test</code> / F, t</td><td>PSS bounds statistics (F = Wald/q)</td></tr>
+  <tr><td><code>long_run</code>, <code>long_run_levels</code></td><td>Long-run coefficients (CE scale / levels)</td></tr>
+  <tr><td><code>ecm</code> / <code>restrict_ecm</code></td><td>Error-correction form (Bardsen when drop empty)</td></tr>
+  <tr><td><code>forecast</code> / <code>forecast_ecm</code></td><td>Level or difference forecasts</td></tr>
+</table>
+
+<pre><code># Bounds + long-run
+s = best.summary()  # str
+print(s)
+print(best.long_run)
+
+# Forecast levels
+print(best.forecast(steps=8, conf_int=True))
+</code></pre>
+
+<h2>Notes</h2>
+<ul>
+  <li><code>common_sample=True</code> (default since 0.1.9) is the recommended setting for fair IC comparison across lag orders.</li>
+  <li>Cases 3–5 control the intercept/trend placement in the UECM / ECM consistently with the PSS tables.</li>
+  <li>For full UECM/ECM dating and restricted ECM details, see the package README.</li>
+</ul>
+
+<nav class="page-nav" aria-label="Page">
+  <a class="page-nav-link prev" href="vecm.html"><span class="page-nav-dir">← Previous</span><span class="page-nav-title">VECM</span></a>
+  <a class="page-nav-link next" href="stationarity.html"><span class="page-nav-dir">Next →</span><span class="page-nav-title">Stationarity</span></a>
+</nav>
+<footer>
+  <p>makystats v0.1.9 · MIT License ·
+    <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
+    <a href="https://pypi.org/project/makystats/">PyPI</a> ·
+    Author: ANDRIANITOVIANA Lauret Boris</p>
+  <p class="muted">Documentation site only — source code lives in the repository and on PyPI, not on these pages.</p>
+</footer>
+    </main>
+  </div>
+</div>
+</body>
+</html>

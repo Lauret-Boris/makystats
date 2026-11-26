@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>VAR · makystats</title>
+  <meta name="description" content="makystats documentation — parameters and usage for VAR"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <script src="js/nav.js" defer></script>
+</head>
+<body>
+<header class="topbar">
+  <button type="button" class="menu-btn" id="menu-btn" aria-controls="sidebar" aria-expanded="true" aria-label="Menu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+  <a class="brand" href="index.html">makystats</a>
+  <a class="ext" href="https://github.com/Lauret-Boris/makystats" rel="noopener">GitHub</a>
+  <a class="ext" href="https://pypi.org/project/makystats/" rel="noopener">PyPI</a>
+  <span class="lang"><a href="fr/var.html">FR</a> · EN</span>
+</header>
+<div class="body-row">
+  <aside class="sidebar" id="sidebar">
+    <a class="nav-item" href="index.html">Home</a>
+    <a class="nav-item" href="install.html">Install</a>
+    <div class="nav-group" id="nav-models">
+      <button type="button" class="nav-group-toggle" id="nav-models-toggle" aria-expanded="true" aria-controls="nav-models-items">
+        <span>Models</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="nav-group-items" id="nav-models-items">
+      <a class="nav-item" href="arma.html">ARMA</a>
+<a class="nav-item" href="armagarch.html">ARMA-GARCH</a>
+<a class="nav-item active" href="var.html">VAR</a>
+<a class="nav-item" href="vecm.html">VECM</a>
+<a class="nav-item" href="ardl.html">ARDL</a>
+      </div>
+    </div>
+        <div class="nav-group" id="nav-tests">
+      <button type="button" class="nav-group-toggle" id="nav-tests-toggle" aria-expanded="true" aria-controls="nav-tests-items">
+        <span>Stationarity</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="nav-group-items" id="nav-tests-items">
+      <a class="nav-item" href="stationarity.html">Overview</a>
+      <a class="nav-item" href="adf.html">ADF</a>
+      <a class="nav-item" href="adf-sequential.html">Sequential ADF</a>
+      <a class="nav-item" href="kpss.html">KPSS</a>
+      <a class="nav-item" href="phillips-perron.html">Phillips–Perron</a>
+      <a class="nav-item" href="dfgls.html">DF-GLS</a>
+      <a class="nav-item" href="zivot-andrews.html">Zivot–Andrews</a>
+      <a class="nav-item" href="engle-granger.html">Engle–Granger</a>
+      </div>
+    </div>
+    <a class="nav-item" href="examples.html">Examples</a>
+  </aside>
+  <button type="button" class="sidebar-backdrop" id="sidebar-backdrop" aria-label="Close menu"></button>
+  <div class="scroll">
+    <main class="wrap">
+
+
+<h1>VAR</h1>
+<p>Vector Autoregression estimated by OLS (native). Order selection, IRF, FEVD,
+multi-step forecasts and residual diagnostics.</p>
+<p class="muted">
+  README: <a href="https://github.com/Lauret-Boris/makystats/blob/main/makystats/var_model/README.md"><code>makystats/var_model/README.md</code></a>
+</p>
+
+<h2>Import</h2>
+<pre><code>from makystats import VAR, select_var_order, fit_from_var_order_table
+</code></pre>
+
+<h2>Order selection — <code>select_var_order</code></h2>
+<pre><code>res = select_var_order(data, maxlags=8, minlags=1, det="c", criterion="bic",
+                       common_sample=True, return_best=True)
+s = res.summary()  # str
+print(s)
+best = res.best_model   # if return_best=True
+</code></pre>
+<table>
+  <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+  <tr><td><code>data</code></td><td>DataFrame / ndarray</td><td>Multivariate series (T × k).</td></tr>
+  <tr><td><code>maxlags</code>, <code>minlags</code></td><td>int</td><td>Lag search range (inclusive).</td></tr>
+  <tr><td><code>det</code></td><td>str, default <code>'c'</code></td><td>Deterministics: <code>'n'</code> none, <code>'c'</code> constant, <code>'ct'</code> constant + trend, <code>'ctt'</code> + quadratic.</td></tr>
+  <tr><td><code>criterion</code></td><td>str, default <code>'bic'</code></td><td><code>'aic'</code>, <code>'bic'</code>, <code>'hqic'</code>, <code>'fpe'</code>.</td></tr>
+  <tr><td><code>common_sample</code></td><td>bool, default <strong>True</strong></td><td>Estimate all lag orders on the same effective sample so ICs are comparable.</td></tr>
+  <tr><td><code>return_best</code></td><td>bool</td><td>Also return a fitted model for the selected lag.</td></tr>
+  <tr><td><code>columns</code></td><td>sequence or None</td><td>Variable names when <code>data</code> is an ndarray.</td></tr>
+</table>
+<p><code>fit_from_var_order_table(...)</code> refits a chosen lag without re-running the grid.</p>
+
+<h2>Estimation — <code>VAR</code> / <code>VARModel</code></h2>
+<pre><code>model = VAR(data, lags=2, det="c")
+res = model.fit()
+s = res.summary()  # str
+print(s)
+print(res.forecast(steps=8))
+irf = res.irf(10); irf.plot()
+</code></pre>
+<table>
+  <tr><th>Parameter</th><th>Description</th></tr>
+  <tr><td><code>lags</code></td><td>VAR order p</td></tr>
+  <tr><td><code>det</code></td><td>Deterministics (<code>n</code>/<code>c</code>/<code>ct</code>/<code>ctt</code>)</td></tr>
+  <tr><td><code>columns</code></td><td>Names for ndarray input</td></tr>
+</table>
+
+<h2>After fit</h2>
+<table>
+  <tr><th>Method</th><th>Content</th></tr>
+  <tr><td><code>results_frame()</code></td><td>In-sample DataFrame: y / fitted / resid per series.</td></tr>
+  <tr><td><code>forecast(steps, ...)</code></td><td>Multi-step forecasts; optional <code>variables=</code> subset</td></tr>
+  <tr><td><code>irf</code>, <code>fevd</code></td><td>Impulse responses and forecast-error variance decomposition</td></tr>
+  <tr><td><code>resid_acorr</code> / diagnostics</td><td>Residual serial correlation tests</td></tr>
+</table>
+
+<nav class="page-nav" aria-label="Page">
+  <a class="page-nav-link prev" href="armagarch.html"><span class="page-nav-dir">← Previous</span><span class="page-nav-title">ARMA-GARCH</span></a>
+  <a class="page-nav-link next" href="vecm.html"><span class="page-nav-dir">Next →</span><span class="page-nav-title">VECM</span></a>
+</nav>
+<footer>
+  <p>makystats v0.1.9 · MIT License ·
+    <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
+    <a href="https://pypi.org/project/makystats/">PyPI</a> ·
+    Author: ANDRIANITOVIANA Lauret Boris</p>
+  <p class="muted">Documentation site only — source code lives in the repository and on PyPI, not on these pages.</p>
+</footer>
+    </main>
+  </div>
+</div>
+</body>
+</html>
