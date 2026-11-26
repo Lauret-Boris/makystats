@@ -16,9 +16,9 @@
 | | |
 |---|---|
 | **Install** | `pip install makystats` |
-| **Python** | >= 3.9 (tested up to 3.14) |
+| **Python** | >= 3.9 (tested up to 3.15) |
 | **License** | MIT |
-| **Version** | 0.1.8 |
+| **Version** | 0.1.9 |
 
 **Documentation:** [Online user guide (EN/FR)](https://Lauret-Boris.github.io/makystats/).
 
@@ -82,25 +82,19 @@ Full technical guides: [VECM](https://github.com/Lauret-Boris/makystats/blob/mai
 
 ---
 
-## Release 0.1.8
+## Release 0.1.9
 
-- **ARMA–GARCH starts**: `start='precise'` (default, ARIMA pre-fit) or `start='fast'` (Yule–Walker / Hannan–Rissanen). `select_order` uses `fast` on the grid.
-- **Conditional polish** and **QMLE SE**: `cov_type='qml'` / `robust` (Bollerslev–Wooldridge sandwich); OPG remains default.
-- **ARDL order selection**: `select_ardl_order(..., common_sample=True)` (default) estimates every candidate on the same effective sample so AIC/BIC/HQIC are comparable; `best_model` is refit on its natural sample.
-- **ARMA/ARIMA forecast SE**: multi-step intervals use exact MA(∞) ψ-weights (integrated for `d = 1, 2`), not `σ√h`.
-- **ARMA–GARCH domain repair**: if unrestricted MLE exits with α &lt; 0, β &lt; 0, or (GJR/TARCH) α+γ &lt; 0, `fit` may **replace** the free optimum by a constrained re-fit (`domain_repair=True` by default). `arma_garch(..., domain_repair=False)` restores the previous unrestricted behaviour and suppresses the domain `UserWarning`. The option is propagated by `select_order` and walk-forward. GJR enforces δ=α+γ ≥ 0 during the retry. Flags `domain_retry` / `domain_retry_accepted`.
-- **FIGARCH filter**: full truncation window with backcast for pre-sample lags (closer to `arch`); unified `d ∈ (0.001, 0.999)` clamp. **Multi-step FIGARCH variance forecasts are experimental** (may differ from `arch` by ~5–10% at horizons ≥ 5).
-- **Multi-start (`n_starts`)** : optional variance starts (`n_starts>1`); each start is fully polished and domain-repaired, then the best **final** LL is kept (`selection=final_loglik_after_polish_and_repair`). Default `1` = single historical start (β≈0.85).
-- **Convergence flag after domain repair**: when a constrained retry is accepted, `res.converged` is re-assessed on the repaired solution (`polish_delta=0`), so accepted repairs are not falsely marked as failed.
-- **API robustness (P0)**: armagarch t-stats / p-values use NaN when SE is 0 or non-finite (no divide-by-zero warning); `JohansenTest(data)` auto-fits so `.summary()` works without an extra `.fit()` call.
-- **mean aliases**: `mean='ARMA'` = AR+MA without X; `mean='ARMAX'` requires `x=`. `select_order` default `start=None`: grid=`fast`, `return_best`=`precise`; explicit `start=` is kept for both.
-- **Warnings hygiene**: no global `filterwarnings('ignore')`; local `catch_warnings` around optimisers only.
-- **Engle–Granger**: MacKinnon (1994, 2010) N=2 residual-based critical values and continuous p-values (aligned with statsmodels `coint`); stage-1 coefficients in `res.extra["coint_coef"]`.
-- **ARMA exact likelihood**: `likelihood='conditional'` (default, burn-in) or `'exact'` (stationary Kalman filter, Gaussian). Exact supports `trend` in `{'n','c','t','ct'}`, exogenous `x`, sparse AR/MA lags, and multiplicative seasonal ARMA; matches EViews ARMA ML / statsmodels ARIMA on comparable specs (Airline ARMA(1,1)+c: LL ≈ 121.70). `summary()` prints Ljung–Box, Jarque–Bera, heteroskedasticity (break-var), skew and kurtosis on standardised residuals. `arima` / `sarima` / `select_arma_order` / `fit_from_arma_order_table` all accept `likelihood`. Keep conditional as default for non-Gaussian `dist` and GARCH grids.
-- **Docs / site**: expanded parameter tables for all modules (EN/FR).
+- **Modular package layout (no API break)**: `armagarch` split into `constants`, `transforms`, `utils`, `filters`, `estimation_mixin`, `risk_mixin`, `forecast_mixin`, `plot_mixin`, `model`, `order_selection` (with `core.py` compatibility facade). `stationarity_test` split per test (`adf`, `kpss`, `phillips_perron`, `dfgls`, `zivot_andrews`, `engle_granger`, `sequential`, plus `base`, `mackinnon`, `summary`). Public imports unchanged (`from makystats import arma_garch, adf, …`; historical `makystats.armagarch.core` / `stationarity_test.core` still work).
+- **Bugfixes after the split**: restore `from scipy.stats import norm` in `risk_mixin` (fixes `forecast`, `expected_shortfall`, `var_series`, `var_backtest`, `direction_probability`); restore `import warnings` in `utils` (multi-column DataFrame `y` warning). Regression tests for public risk/forecast methods.
+- **`summary()` returns `str` only** (no side-effect print): ARMA, ARMA–GARCH, ARDL, VECM, Johansen — same pattern as VAR/stationarity. Use `print(res.summary())` (avoids the old double display / trailing `None`).
+- **`results_frame()` on VAR / VECM**: in-sample DataFrame of endogenous / fitted / residuals (estimation index), aligned with the univariate API.
+- **Hygiene**: exclude `__pycache__` (`.gitignore` + `MANIFEST.in`); fix Johansin→Johansen; schedule removal of deprecated `makystats.stationarity` in **0.3.0**; document ARMA `likelihood='conditional'` vs statsmodels and VAR AIC (−2ℓ/T) vs log-det; soften GARCH polish/convergence messages when SciPy reports False but the fit remains usable.
+- **Packaging**: SPDX `license = "MIT"` + `license-files`; CI workflow (`.github/workflows/tests.yml`) runs `pytest -m "not slow"` on Python 3.10 and 3.12.
+- Carries forward all **0.1.8** features (exact ARMA likelihood, domain repair, ARDL `common_sample`, MA(∞) forecast SE, Engle–Granger MacKinnon N=2, docs/site parameter tables).
 
 ### Earlier releases
 
+- **0.1.8** — ARMA–GARCH starts (`precise`/`fast`); conditional polish; QMLE SE; ARDL `common_sample`; ARMA/ARIMA MA(∞) forecast SE; domain repair; FIGARCH truncation/backcast; multi-start `n_starts`; exact Gaussian ARMA likelihood (`likelihood='exact'`); Engle–Granger MacKinnon N=2; warning hygiene; expanded parameter tables (EN/FR).
 - **0.1.7** — ARDL bounds F = Wald/q; `long_run` = CE only + `long_run_levels`; ECM order=0 mixed dating; `restrict_ecm` Bardsen when empty drop.
 - **0.1.6** — ARMA–GARCH free AR/MA (inverted roots); `nonneg_var` / `stationary_var`; APARCH/FIGARCH forecast recursion; `res.optimization`; ADF lag selection on a common sample.
 - **0.1.5** — Stationarity suite (KPSS / PP / DF-GLS / ZA APIs, sequential ADF, MAIC / Perron–Qu); expanded `stationarity_test` README.
@@ -701,4 +695,4 @@ python -m pytest tests/ -q
 
 ## License
 
-MIT. Version **0.1.8**.
+MIT. Version **0.1.9**.

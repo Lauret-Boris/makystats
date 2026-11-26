@@ -58,27 +58,19 @@ Générées depuis le dossier `website/` (GitHub Pages). Le dossier `docs/` du d
 Guides techniques complets : [VECM](https://github.com/Lauret-Boris/makystats/blob/main/makystats/vecm/DOCUMENTATION.md), [VAR](https://github.com/Lauret-Boris/makystats/blob/main/makystats/var_model/README.md), [ARMA-GARCH](https://github.com/Lauret-Boris/makystats/blob/main/makystats/armagarch/DOCUMENTATION.md), [ARMA](https://github.com/Lauret-Boris/makystats/blob/main/makystats/arma/README.md), [ARDL](https://github.com/Lauret-Boris/makystats/blob/main/makystats/ardl/DOCUMENTATION.md), [stationnarité / racines unitaires](https://github.com/Lauret-Boris/makystats/blob/main/makystats/stationarity_test/README.md) (aussi livrés dans le paquet installé).
 
 
-## Version 0.1.8
+## Version 0.1.9
 
-- **Vraisemblance exacte ARMA** : `likelihood='conditional'` (défaut, burn-in) ou `'exact'` (filtre de Kalman stationnaire, gaussien). Exact supporte `trend` ∈ {`n`,`c`,`t`,`ct`}, exogènes, retards creux et SARMA multiplicatif ; aligne EViews ARMA ML / statsmodels ARIMA (Airline ARMA(1,1)+c : LL ≈ 121,70). `summary()` affiche Ljung–Box, Jarque–Bera, hétéroscédasticité, asymétrie et kurtosis sur résidus standardisés. `arima` / `sarima` / `select_arma_order` / `fit_from_arma_order_table` acceptent `likelihood`. Le défaut reste conditionnel (lois non gaussiennes, grilles GARCH).
-
-- **Engle–Granger** : valeurs critiques et p-values MacKinnon (1994, 2010) N=2 (alignées sur statsmodels `coint`) ; coefficients d’étape 1 dans `res.extra["coint_coef"]`.
-
-- **Départs ARMA–GARCH** : `start='precise'` (défaut) ou `start='fast'` (Yule–Walker / Hannan–Rissanen). `select_order` utilise `fast` sur la grille.
-- **Polish conditionnel** et **SE QMLE** : `cov_type='qml'` / `robust` (sandwich Bollerslev–Wooldridge) ; OPG reste le défaut.
-- **Sélection ARDL** : `select_ardl_order(..., common_sample=True)` (défaut) estime tous les candidats sur le même échantillon effectif pour des AIC/BIC comparables ; `best_model` est re-estimé sur son échantillon naturel.
-- **Prévisions ARMA/ARIMA** : SE multi-pas exacts via poids MA(∞) ψ (intégration pour `d = 1, 2`).
-- **Réparation de domaine ARMA–GARCH** : si l’optimum libre sort avec α &lt; 0, β &lt; 0 ou (GJR/TARCH) α+γ &lt; 0, `fit` peut **remplacer** l’optimum libre par une re-estimation contrainte (`domain_repair=True` par défaut). `arma_garch(..., domain_repair=False)` rétablit le comportement libre précédent et coupe le `UserWarning` de domaine. L’option est propagée par `select_order` et le walk-forward. Le GJR force δ=α+γ ≥ 0 pendant la relance. Drapeaux `domain_retry` / `domain_retry_accepted`.
-- **Multi-départ (`n_starts`)** : départs de variance optionnels (`n_starts>1`) ; chaque départ est poli et réparé, la meilleure LL **finale** est retenue. Défaut `1` = départ unique (β≈0.85).
-- **Drapeau de convergence après réparation** : si la relance contrainte est acceptée, `res.converged` est réévalué sur la solution réparée (`polish_delta=0`), pour ne pas marquer à tort un échec.
-- **Robustesse API (P0)** : t-stats / p-values armagarch en NaN si SE = 0 ou non fini (plus de warning de division) ; `JohansenTest(data)` s’ajuste automatiquement pour que `.summary()` fonctionne sans `.fit()` supplémentaire.
-- **Filtre FIGARCH** : fenêtre de troncature complète + backcast pour les retards pré-échantillon (aligné sur `arch`) ; borne unifiée `d ∈ (0.001, 0.999)`. **Les prévisions FIGARCH multi-pas sont expérimentales** (écart possible ~5–10 % vs `arch` dès l’horizon 5).
-- **Alias `mean`** : `mean='ARMA'` = AR+MA sans X ; `mean='ARMAX'` exige `x=`. `select_order` défaut `start=None` : grille=`fast`, `return_best`=`precise` ; un `start=` explicite est conservé pour les deux.
-- **Avertissements** : plus de `filterwarnings('ignore')` global ; silence local autour des optimiseurs uniquement.
-- **Documentation / site** : tableaux de paramètres enrichis pour **tous** les modules (EN/FR).
+- **Organisation modulaire (sans rupture d'API)** : `armagarch` découpé en `constants`, `transforms`, `utils`, `filters`, `estimation_mixin`, `risk_mixin`, `forecast_mixin`, `plot_mixin`, `model`, `order_selection` (façade `core.py`). `stationarity_test` découpé par test (`adf`, `kpss`, `phillips_perron`, `dfgls`, `zivot_andrews`, `engle_granger`, `sequential`, plus `base`, `mackinnon`, `summary`). Imports publics inchangés ; les chemins historiques `makystats.armagarch.core` et `stationarity_test.core` restent valides.
+- **Correctifs post-découpage** : `from scipy.stats import norm` dans `risk_mixin` (répare `forecast`, `expected_shortfall`, `var_series`, `var_backtest`, `direction_probability`) ; `import warnings` dans `utils` (avertissement DataFrame multi-colonnes). Tests de régression sur les méthodes publiques de risque / prévision.
+- **`summary()` renvoie une `str` uniquement** (plus d'impression interne) : ARMA, ARMA–GARCH, ARDL, VECM, Johansen — comme VAR/stationarity. Utiliser `print(res.summary())` (évite le double affichage et le `None` en bas).
+- **`results_frame()` sur VAR / VECM** : DataFrame in-sample endogène / ajusté / résidus (index d'estimation), aligné sur l'API univariée.
+- **Hygiène** : exclusion des `__pycache__` (`.gitignore` + `MANIFEST.in`) ; correction Johansin→Johansen ; retrait planifié de l’alias déprécié `makystats.stationarity` en **0.3.0** ; documentation du défaut ARMA `likelihood='conditional'` vs statsmodels et de l’AIC VAR (−2ℓ/T) vs log-det ; messages de convergence GARCH moins alarmants lorsque SciPy renvoie False mais l’estimation reste utilisable.
+- **Packaging** : licence SPDX `license = "MIT"` + `license-files` ; workflow CI (`.github/workflows/tests.yml`) lance `pytest -m "not slow"` sur Python 3.10 et 3.12.
+- Reprend l'ensemble des fonctionnalités **0.1.8** (vraisemblance exacte ARMA, réparation de domaine, ARDL `common_sample`, SE de prévision MA(∞), Engle–Granger MacKinnon N=2, tableaux de paramètres site/docs).
 
 ### Versions antérieures
 
+- **0.1.8** — Départs ARMA–GARCH (`precise`/`fast`) ; polish conditionnel ; SE QMLE ; ARDL `common_sample` ; SE de prévision ARMA/ARIMA via ψ MA(∞) ; réparation de domaine ; FIGARCH troncature/backcast ; multi-départ `n_starts` ; vraisemblance ARMA exacte gaussienne (`likelihood='exact'`) ; Engle–Granger MacKinnon N=2 ; hygiène des avertissements ; tableaux de paramètres enrichis (EN/FR).
 - **0.1.7** — Bornes ARDL F = Wald/q ; `long_run` = CE seule + `long_run_levels` ; ECM order=0 datation mixte ; `restrict_ecm` Bardsen si drop vide.
 - **0.1.6** — ARMA–GARCH AR/MA libres (racines inverses) ; `nonneg_var` / `stationary_var` ; prévisions APARCH/FIGARCH ; `res.optimization` ; retards ADF sur échantillon commun.
 - **0.1.5** — Suite de stationnarité (KPSS / PP / DF-GLS / ZA, ADF séquentiel, MAIC / Perron–Qu).
@@ -499,4 +491,4 @@ python -m pytest tests/ -q
 
 ## Licence
 
-MIT (voir `pyproject.toml`). Version **0.1.8**.
+MIT (voir `pyproject.toml`). Version **0.1.9**.
