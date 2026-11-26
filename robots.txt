@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://lauret-boris.github.io/makystats/sitemap.xml
