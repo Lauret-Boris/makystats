@@ -72,7 +72,8 @@ multi-step forecasts and residual diagnostics.</p>
 <h2>Order selection — <code>select_var_order</code></h2>
 <pre><code>res = select_var_order(data, maxlags=8, minlags=1, det="c", criterion="bic",
                        common_sample=True, return_best=True)
-print(res.summary())
+s = res.summary()  # str
+print(s)
 best = res.best_model   # if return_best=True
 </code></pre>
 <table>
@@ -90,7 +91,8 @@ best = res.best_model   # if return_best=True
 <h2>Estimation — <code>VAR</code> / <code>VARModel</code></h2>
 <pre><code>model = VAR(data, lags=2, det="c")
 res = model.fit()
-print(res.summary())
+s = res.summary()  # str
+print(s)
 print(res.forecast(steps=8))
 irf = res.irf(10); irf.plot()
 </code></pre>
@@ -104,6 +106,7 @@ irf = res.irf(10); irf.plot()
 <h2>After fit</h2>
 <table>
   <tr><th>Method</th><th>Content</th></tr>
+  <tr><td><code>results_frame()</code></td><td>In-sample DataFrame: y / fitted / resid per series.</td></tr>
   <tr><td><code>forecast(steps, ...)</code></td><td>Multi-step forecasts; optional <code>variables=</code> subset</td></tr>
   <tr><td><code>irf</code>, <code>fevd</code></td><td>Impulse responses and forecast-error variance decomposition</td></tr>
   <tr><td><code>resid_acorr</code> / diagnostics</td><td>Residual serial correlation tests</td></tr>
@@ -114,7 +117,7 @@ irf = res.irf(10); irf.plot()
   <a class="page-nav-link next" href="vecm.html"><span class="page-nav-dir">Next →</span><span class="page-nav-title">VECM</span></a>
 </nav>
 <footer>
-  <p>makystats v0.1.8 · MIT License ·
+  <p>makystats v0.1.9 · MIT License ·
     <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
     <a href="https://pypi.org/project/makystats/">PyPI</a> ·
     Author: ANDRIANITOVIANA Lauret Boris</p>

@@ -69,7 +69,8 @@ res = arma(y, mean="ARMA", ar=1, ma=1, trend="c").fit()
 
 # Aligner EViews ARMA ML / statsmodels ARIMA
 res = arma(y, ar=1, ma=1, trend="c", likelihood="exact").fit()
-print(res.summary())
+s = res.summary()  # str
+print(s)
 
 res = arima(prix, order=(1, 1, 1), trend="c").fit()
 res = sarima(ylog, order=(0, 1, 1), seasonal_order=(0, 1, 1, 12),
@@ -191,7 +192,7 @@ second = fit_from_arma_order_table(y, tab, rank=2)
   <a class="page-nav-link next" href="armagarch.html"><span class="page-nav-dir">Suivant →</span><span class="page-nav-title">ARMA-GARCH</span></a>
 </nav>
 <footer>
-  <p>makystats v0.1.8 · Licence MIT ·
+  <p>makystats v0.1.9 · Licence MIT ·
     <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
     <a href="https://pypi.org/project/makystats/">PyPI</a> ·
     Auteur : ANDRIANITOVIANA Lauret Boris</p>

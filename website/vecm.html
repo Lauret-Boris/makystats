@@ -74,7 +74,7 @@ with MHM p-values and critical values.</p>
 <pre><code>rank_res = select_coint_rank(
     data, k_ar_diff=1, test_case="3", method="trace", signif=0.05
 )
-print(rank_res.summary())
+print(rank_res.summary())  # rank table
 print(rank_res.rank)
 </code></pre>
 <table>
@@ -94,7 +94,9 @@ print(rank_res.rank)
 <h2>Estimation — <code>VECM</code> / <code>VECMModel</code></h2>
 <pre><code>mod = VECM(data, k_ar_diff=1, coint_rank=1, det_case="3a")
 res = mod.fit()
-print(res.summary())
+s = res.summary()  # str
+print(s)
+print(res.results_frame(level=False).head())  # ΔY / fitted / resid; level=True for levels
 print(res.forecast(steps=8))
 </code></pre>
 <table>
@@ -115,6 +117,7 @@ print(res.forecast(steps=8))
 <table>
   <tr><th>Attribute / method</th><th>Content</th></tr>
   <tr><td><code>alpha</code>, <code>beta</code></td><td>Adjustment and cointegrating vectors</td></tr>
+  <tr><td><code>results_frame</code></td><td>In-sample ΔY / fitted / resid (<code>level=True</code> for levels)</td></tr>
   <tr><td><code>forecast</code></td><td>Multi-step forecasts; optional <code>variables=</code></td></tr>
   <tr><td><code>irf</code>, diagnostics</td><td>Impulse responses and residual checks</td></tr>
 </table>
@@ -124,7 +127,7 @@ print(res.forecast(steps=8))
   <a class="page-nav-link next" href="ardl.html"><span class="page-nav-dir">Next →</span><span class="page-nav-title">ARDL</span></a>
 </nav>
 <footer>
-  <p>makystats v0.1.8 · MIT License ·
+  <p>makystats v0.1.9 · MIT License ·
     <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
     <a href="https://pypi.org/project/makystats/">PyPI</a> ·
     Author: ANDRIANITOVIANA Lauret Boris</p>

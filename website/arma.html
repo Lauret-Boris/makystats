@@ -70,7 +70,8 @@ res = arma(y, mean="ARMA", ar=1, ma=1, trend="c").fit()
 
 # Match EViews ARMA Maximum Likelihood / statsmodels ARIMA
 res = arma(y, ar=1, ma=1, trend="c", likelihood="exact").fit()
-print(res.summary())   # Ljung-Box, JB, H, skew, kurtosis
+s = res.summary()       # returns str; Ljung-Box, JB, H, skew, kurtosis
+print(s)
 
 # ARIMA on levels (differencing is internal)
 res = arima(prices, order=(1, 1, 1), trend="c").fit()
@@ -241,7 +242,7 @@ second = fit_from_arma_order_table(y, tab, rank=2)  # no re-grid
   <a class="page-nav-link next" href="armagarch.html"><span class="page-nav-dir">Next →</span><span class="page-nav-title">ARMA-GARCH</span></a>
 </nav>
 <footer>
-  <p>makystats v0.1.8 · MIT License ·
+  <p>makystats v0.1.9 · MIT License ·
     <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
     <a href="https://pypi.org/project/makystats/">PyPI</a> ·
     Author: ANDRIANITOVIANA Lauret Boris</p>
