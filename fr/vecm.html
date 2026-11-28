@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>VECM · makystats</title>
+  <meta name="description" content="Documentation makystats — paramètres et usage de VECM"/>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <script src="../js/nav.js" defer></script>
+</head>
+<body>
+<header class="topbar">
+  <button type="button" class="menu-btn" id="menu-btn" aria-controls="sidebar" aria-expanded="true" aria-label="Menu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+  <a class="brand" href="index.html">makystats</a>
+  <a class="ext" href="https://github.com/Lauret-Boris/makystats" rel="noopener">GitHub</a>
+  <a class="ext" href="https://pypi.org/project/makystats/" rel="noopener">PyPI</a>
+  <span class="lang">FR · <a href="../vecm.html">EN</a></span>
+</header>
+<div class="body-row">
+  <aside class="sidebar" id="sidebar">
+    <a class="nav-item" href="index.html">Accueil</a>
+    <a class="nav-item" href="install.html">Installation</a>
+    <div class="nav-group" id="nav-models">
+      <button type="button" class="nav-group-toggle" id="nav-models-toggle" aria-expanded="true" aria-controls="nav-models-items">
+        <span>Modèles</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="nav-group-items" id="nav-models-items">
+      <a class="nav-item" href="arma.html">ARMA</a>
+<a class="nav-item" href="armagarch.html">ARMA-GARCH</a>
+<a class="nav-item" href="var.html">VAR</a>
+<a class="nav-item active" href="vecm.html">VECM</a>
+<a class="nav-item" href="ardl.html">ARDL</a>
+      </div>
+    </div>
+        <div class="nav-group" id="nav-tests">
+      <button type="button" class="nav-group-toggle" id="nav-tests-toggle" aria-expanded="true" aria-controls="nav-tests-items">
+        <span>Stationnarité</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="nav-group-items" id="nav-tests-items">
+      <a class="nav-item" href="stationarity.html">Vue d’ensemble</a>
+      <a class="nav-item" href="adf.html">ADF</a>
+      <a class="nav-item" href="adf-sequential.html">ADF séquentiel</a>
+      <a class="nav-item" href="kpss.html">KPSS</a>
+      <a class="nav-item" href="phillips-perron.html">Phillips–Perron</a>
+      <a class="nav-item" href="dfgls.html">DF-GLS</a>
+      <a class="nav-item" href="zivot-andrews.html">Zivot–Andrews</a>
+      <a class="nav-item" href="engle-granger.html">Engle–Granger</a>
+      </div>
+    </div>
+    <a class="nav-item" href="validation.html">Validation</a>
+    <a class="nav-item" href="examples.html">Exemples</a>
+  </aside>
+  <button type="button" class="sidebar-backdrop" id="sidebar-backdrop" aria-label="Fermer le menu"></button>
+  <div class="scroll">
+    <main class="wrap">
+
+
+<h1>VECM / Johansen</h1>
+<p>Modèle à correction d’erreur vectoriel et tests de cointégration de Johansen
+(trace / max-eigen), avec p-values et valeurs critiques MHM.</p>
+
+<h2>Import</h2>
+<pre><code>from makystats import VECM, select_coint_rank, JohansenTest, summarize_johansen
+</code></pre>
+
+<h2>Sélection du rang — <code>select_coint_rank</code></h2>
+<pre><code>rank_res = select_coint_rank(
+    data, k_ar_diff=1, test_case="3", method="trace", signif=0.05
+)
+print(rank_res.rank)
+</code></pre>
+<table>
+  <tr><th>Paramètre</th><th>Description</th></tr>
+  <tr><td><code>data</code></td><td>Données en niveaux (T × k).</td></tr>
+  <tr><td><code>k_ar_diff</code></td><td>Nombre de différences retardées dans le VECM.</td></tr>
+  <tr><td><code>test_case</code></td><td><code>'1'</code>…<code>'5'</code> — cas déterministe du test de Johansen.</td></tr>
+  <tr><td><code>method</code></td><td><code>'trace'</code> ou <code>'maxeig'</code>.</td></tr>
+  <tr><td><code>signif</code></td><td>Niveau pour la décision séquentielle de rang (défaut 0.05).</td></tr>
+</table>
+<p>Les p-values utilisent les surfaces de réponse MHM (MacKinnon–Haug–Michelis).</p>
+
+<h2>Estimation — <code>VECM</code></h2>
+<pre><code>mod = VECM(data, k_ar_diff=1, coint_rank=1, det_case="3a")
+res = mod.fit()
+print(res.summary())
+</code></pre>
+<table>
+  <tr><th>Paramètre</th><th>Description</th></tr>
+  <tr><td><code>k_ar_diff</code></td><td>Différences retardées.</td></tr>
+  <tr><td><code>coint_rank</code></td><td>Rang de cointégration r.</td></tr>
+  <tr><td><code>det_case</code></td><td>
+    <code>'1'</code>, <code>'2'</code>, <code>'3a'</code>, <code>'3b'</code>, <code>'4a'</code>, <code>'4b'</code>, <code>'5a'</code>, <code>'5b'</code>
+    (constante / tendance dans ou hors la relation de cointégration).
+  </td></tr>
+</table>
+<p><strong>Note :</strong> makystats utilise <code>test_case</code> / <code>det_case</code> (pas les chaînes statsmodels <code>det_order</code> / <code>deterministic</code>).</p>
+
+<nav class="page-nav" aria-label="Page">
+  <a class="page-nav-link prev" href="var.html"><span class="page-nav-dir">← Précédent</span><span class="page-nav-title">VAR</span></a>
+  <a class="page-nav-link next" href="ardl.html"><span class="page-nav-dir">Suivant →</span><span class="page-nav-title">ARDL</span></a>
+</nav>
+<footer>
+  <p>makystats v0.1.9 · Licence MIT ·
+    <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
+    <a href="https://pypi.org/project/makystats/">PyPI</a> ·
+    Auteur : ANDRIANITOVIANA Lauret Boris</p>
+  <p class="muted">Site de documentation uniquement — le code source est dans le dépôt et sur PyPI.</p>
+</footer>
+    </main>
+  </div>
+</div>
+</body>
+</html>

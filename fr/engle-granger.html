@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Engle–Granger · makystats</title>
+  <meta name="description" content="makystats — Engle–Granger (v0.1.9)"/>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <script src="../js/nav.js" defer></script>
+</head>
+<body>
+<header class="topbar">
+  <button type="button" class="menu-btn" id="menu-btn" aria-controls="sidebar" aria-expanded="true" aria-label="Menu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+  <a class="brand" href="index.html">makystats</a>
+  <a class="ext" href="https://github.com/Lauret-Boris/makystats" rel="noopener">GitHub</a>
+  <a class="ext" href="https://pypi.org/project/makystats/" rel="noopener">PyPI</a>
+  <span class="lang">FR · <a href="../engle-granger.html">EN</a></span>
+</header>
+<div class="body-row">
+  <aside class="sidebar" id="sidebar">
+    <a class="nav-item" href="index.html">Accueil</a>
+    <a class="nav-item" href="install.html">Installation</a>
+    <div class="nav-group" id="nav-models">
+      <button type="button" class="nav-group-toggle" id="nav-models-toggle" aria-expanded="true" aria-controls="nav-models-items">
+        <span>Modèles</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="nav-group-items" id="nav-models-items">
+      <a class="nav-item" href="arma.html">ARMA</a>
+      <a class="nav-item" href="armagarch.html">ARMA-GARCH</a>
+      <a class="nav-item" href="var.html">VAR</a>
+      <a class="nav-item" href="vecm.html">VECM</a>
+      <a class="nav-item" href="ardl.html">ARDL</a>
+      </div>
+    </div>
+    <div class="nav-group" id="nav-tests">
+      <button type="button" class="nav-group-toggle" id="nav-tests-toggle" aria-expanded="true" aria-controls="nav-tests-items">
+        <span>Stationnarité</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="nav-group-items" id="nav-tests-items">
+      <a class="nav-item" href="stationarity.html">Vue d’ensemble</a>
+      <a class="nav-item" href="adf.html">ADF</a>
+      <a class="nav-item" href="adf-sequential.html">ADF séquentiel</a>
+      <a class="nav-item" href="kpss.html">KPSS</a>
+      <a class="nav-item" href="phillips-perron.html">Phillips–Perron</a>
+      <a class="nav-item" href="dfgls.html">DF-GLS</a>
+      <a class="nav-item" href="zivot-andrews.html">Zivot–Andrews</a>
+      <a class="nav-item active" href="engle-granger.html">Engle–Granger</a>
+      </div>
+    </div>
+    <a class="nav-item" href="validation.html">Validation</a>
+    <a class="nav-item" href="examples.html">Exemples</a>
+  </aside>
+  <button type="button" class="sidebar-backdrop" id="sidebar-backdrop" aria-label="Close menu"></button>
+  <div class="scroll">
+    <main class="wrap">
+
+
+
+<h1>Engle–Granger</h1>
+<p>Test de cointégration sur résidus pour <strong>deux</strong> séries (procédure en deux étapes).
+H₀ : <em>pas de cointégration</em>.</p>
+
+<h2>Import</h2>
+<pre><code>from makystats import engle_granger
+
+res = engle_granger(y0, y1, trend="c", maxlag=None, autolag="AIC")
+print(res.summary())
+print(res.extra["coint_coef"])   # coefficients de l’étape 1
+print(res.reject_null(0.05))
+</code></pre>
+
+<h2>Paramètres</h2>
+<table>
+  <tr><th>Paramètre</th><th>Type</th><th>Description</th></tr>
+  <tr><td><code>y0</code></td><td>série</td><td>Première série (membre de gauche de la régression de cointégration).</td></tr>
+  <tr><td><code>y1</code></td><td>série</td><td>Seconde série (membre de droite). Alignement sur l’échantillon commun final.</td></tr>
+  <tr><td><code>trend</code></td><td><code>'n'|'nc'|'c'|'ct'</code>, défaut <code>'c'</code></td><td>
+    Déterministes de l’<em>équation de cointégration</em> (étape 1) :
+    <code>n</code>/<code>nc</code> aucun ;
+    <code>c</code> constante ;
+    <code>ct</code> constante + tendance linéaire.
+  </td></tr>
+  <tr><td><code>maxlag</code></td><td>int ou None</td><td>Retard maximal de l’ADF sur résidus (étape 2).</td></tr>
+  <tr><td><code>autolag</code></td><td><code>'AIC'|'BIC'|'t-stat'|None</code>, défaut <code>'AIC'</code></td><td>
+    Sélection du retard de l’ADF résiduel (même sens que <code>adf</code>).
+    Utiliser <code>maxlag=k, autolag=None</code> pour un retard fixe (alignement exact avec statsmodels <code>coint</code> au même retard).
+  </td></tr>
+</table>
+
+<h2>Calcul</h2>
+<ol>
+  <li><strong>Étape 1</strong> — MCO de <code>y0</code> sur <code>y1</code> (+ déterministes).</li>
+  <li><strong>Étape 2</strong> — ADF sur les résidus avec <code>regression='n'</code>.</li>
+  <li><strong>Inférence</strong> — surfaces de réponse de MacKinnon (1994, 2010) pour <strong>N=2</strong> (mêmes tables que statsmodels <code>coint</code>). CV à distance finie avec <code>nobs&nbsp;-&nbsp;1</code>.</li>
+</ol>
+
+<h2>Résultat</h2>
+<table>
+  <tr><th>Attribut</th><th>Contenu</th></tr>
+  <tr><td><code>statistic</code></td><td>Statistique t de l’ADF résiduel</td></tr>
+  <tr><td><code>pvalue</code></td><td>p-value MacKinnon N=2 (continue, non tronquée à 0.01/0.10)</td></tr>
+  <tr><td><code>critical_values</code></td><td>1 %, 5 %, 10 % (dépendantes de T pour <code>c</code>/<code>ct</code>)</td></tr>
+  <tr><td><code>extra["coint_coef"]</code></td><td>Coefficients de l’étape 1</td></tr>
+  <tr><td><code>reject_null(alpha)</code></td><td>Rejet de H₀ au niveau <code>alpha</code></td></tr>
+</table>
+
+<h2>Notes</h2>
+<ul>
+  <li>Avec <code>autolag</code>, la sélection de retards suit la politique ADF native (IC sur échantillon commun) et peut différer de statsmodels ; le mapping MacKinnon d’une statistique donnée reste identique.</li>
+  <li>Pour <code>trend='n'</code>, les CV 2010 à distance finie ne sont pas publiées pour N&gt;1 (NaN) ; la p-value asymptotique reste disponible.</li>
+</ul>
+
+<nav class="page-nav" aria-label="Page">
+  <a class="page-nav-link prev" href="zivot-andrews.html"><span class="page-nav-dir">← Précédent</span><span class="page-nav-title">Zivot–Andrews</span></a>
+  <a class="page-nav-link next" href="examples.html"><span class="page-nav-dir">Suivant →</span><span class="page-nav-title">Exemples</span></a>
+</nav>
+<footer>
+  <p>makystats v0.1.9 · MIT License ·
+    <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
+    <a href="https://pypi.org/project/makystats/">PyPI</a></p>
+</footer>
+    </main>
+  </div>
+</div>
+</body>
+</html>

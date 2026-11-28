@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>ARMA · makystats</title>
+  <meta name="description" content="makystats documentation — parameters and usage for ARMA"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <script src="js/nav.js" defer></script>
+</head>
+<body>
+<header class="topbar">
+  <button type="button" class="menu-btn" id="menu-btn" aria-controls="sidebar" aria-expanded="true" aria-label="Menu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+  <a class="brand" href="index.html">makystats</a>
+  <a class="ext" href="https://github.com/Lauret-Boris/makystats" rel="noopener">GitHub</a>
+  <a class="ext" href="https://pypi.org/project/makystats/" rel="noopener">PyPI</a>
+  <span class="lang"><a href="fr/arma.html">FR</a> · EN</span>
+</header>
+<div class="body-row">
+  <aside class="sidebar" id="sidebar">
+    <a class="nav-item" href="index.html">Home</a>
+    <a class="nav-item" href="install.html">Install</a>
+    <div class="nav-group" id="nav-models">
+      <button type="button" class="nav-group-toggle" id="nav-models-toggle" aria-expanded="true" aria-controls="nav-models-items">
+        <span>Models</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="nav-group-items" id="nav-models-items">
+      <a class="nav-item active" href="arma.html">ARMA</a>
+<a class="nav-item" href="armagarch.html">ARMA-GARCH</a>
+<a class="nav-item" href="var.html">VAR</a>
+<a class="nav-item" href="vecm.html">VECM</a>
+<a class="nav-item" href="ardl.html">ARDL</a>
+      </div>
+    </div>
+        <div class="nav-group" id="nav-tests">
+      <button type="button" class="nav-group-toggle" id="nav-tests-toggle" aria-expanded="true" aria-controls="nav-tests-items">
+        <span>Stationarity</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="nav-group-items" id="nav-tests-items">
+      <a class="nav-item" href="stationarity.html">Overview</a>
+      <a class="nav-item" href="adf.html">ADF</a>
+      <a class="nav-item" href="adf-sequential.html">Sequential ADF</a>
+      <a class="nav-item" href="kpss.html">KPSS</a>
+      <a class="nav-item" href="phillips-perron.html">Phillips–Perron</a>
+      <a class="nav-item" href="dfgls.html">DF-GLS</a>
+      <a class="nav-item" href="zivot-andrews.html">Zivot–Andrews</a>
+      <a class="nav-item" href="engle-granger.html">Engle–Granger</a>
+      </div>
+    </div>
+    <a class="nav-item" href="validation.html">Validation</a>
+    <a class="nav-item" href="examples.html">Examples</a>
+  </aside>
+  <button type="button" class="sidebar-backdrop" id="sidebar-backdrop" aria-label="Close menu"></button>
+  <div class="scroll">
+    <main class="wrap">
+<h1>ARMA / ARIMA / SARIMA</h1>
+<p class="lead">Constant-variance ARMA family: Gaussian or heavy-tailed innovations,
+optional differencing and seasonal factors. Multi-step forecast standard errors
+use exact MA(∞) ψ-weights. Two likelihoods: <strong>conditional</strong> (default)
+and <strong>exact</strong> (Kalman, EViews / statsmodels-style).</p>
+
+<h2>Quick start</h2>
+<pre><code>from makystats import arma, arima, sarima, select_arma_order
+
+# ARMA (stationary series)
+res = arma(y, mean="ARMA", ar=1, ma=1, trend="c").fit()
+
+# Match EViews ARMA Maximum Likelihood / statsmodels ARIMA
+res = arma(y, ar=1, ma=1, trend="c", likelihood="exact").fit()
+s = res.summary()       # returns str; Ljung-Box, JB, H, skew, kurtosis
+print(s)
+
+# ARIMA on levels (differencing is internal)
+res = arima(prices, order=(1, 1, 1), trend="c").fit()
+res.forecast(steps=10)                # levels when d&gt;0
+res.forecast(steps=10, levels=False)  # on Δy
+
+# Airline-style SARIMA
+res = sarima(ylog, order=(0, 1, 1), seasonal_order=(0, 1, 1, 12),
+             trend="n", likelihood="exact").fit()
+</code></pre>
+
+<h2>Parameters</h2>
+<p>Common to <code>ARMA</code>, <code>arma()</code>, <code>arima()</code>, <code>sarima()</code>
+(and forwarded by <code>select_arma_order</code> / <code>fit_from_arma_order_table</code>).</p>
+<table>
+  <thead>
+    <tr><th>Parameter</th><th>Type / default</th><th>Description</th></tr>
+  </thead>
+  <tbody>
+  <tr>
+    <td><code>ar</code> / <code>p</code></td>
+    <td>int or list of int, default 0</td>
+    <td>Non-seasonal AR order. Integer = lags 1…p; list = sparse lags (e.g. <code>[1, 4]</code>).</td>
+  </tr>
+  <tr>
+    <td><code>ma</code> / <code>q</code></td>
+    <td>int or list of int, default 0</td>
+    <td>Non-seasonal MA order (same rules as AR).</td>
+  </tr>
+  <tr>
+    <td><code>d</code></td>
+    <td>{0, 1, 2}, default 0</td>
+    <td>Regular differences <code>(1−L)^d</code> applied before estimation.
+        Forecast returns levels by default when <code>d&gt;0</code>.</td>
+  </tr>
+  <tr>
+    <td><code>seasonal_order</code></td>
+    <td>(P, D, Q, s) or None</td>
+    <td>Multiplicative seasonal ARIMA. <code>D</code> is applied upstream;
+        <code>P</code>, <code>Q</code>, <code>s</code> enter the filter. Dense contiguous
+        orders may use the SARIMAX path under <code>likelihood='conditional'</code>.</td>
+  </tr>
+  <tr>
+    <td><code>trend</code></td>
+    <td><code>'n'|'c'|'t'|'ct'</code>, default <code>'c'</code></td>
+    <td>Deterministics (statsmodels-style): none, constant, linear trend, or both.
+        With <code>likelihood='exact'</code>, <code>const</code> is the <strong>unconditional mean</strong>
+        (EViews C), not the intercept form <code>μ(1−φ)</code>.</td>
+  </tr>
+  <tr>
+    <td><code>mean</code></td>
+    <td>str, default <code>'Constant'</code></td>
+    <td>Mean structure label: <code>Constant</code>, <code>Zero</code>, <code>AR</code>/<code>ARMA</code>,
+        <code>ARX</code>/<code>ARMAX</code>, <code>HAR</code>. With AR/MA lags,
+        <code>Constant</code> is promoted to <code>AR</code>.</td>
+  </tr>
+  <tr>
+    <td><code>likelihood</code></td>
+    <td><code>'conditional'|'exact'</code>, default <code>'conditional'</code></td>
+    <td>
+      <ul>
+        <li><strong>conditional</strong> (default): burn-in MLE, same engine as the ARMA–GARCH mean equation.
+            Effective sample loses the first <code>max(p,q)</code> observations. Supports non-Gaussian <code>dist</code>.</li>
+        <li><strong>exact</strong>: stationary Kalman filter (Gaussian only). Full sample;
+            matches EViews ARMA ML and statsmodels ARIMA on comparable specs.
+            Supports <code>trend</code> in <code>{n,c,t,ct}</code>, exogenous <code>x</code>, sparse lags,
+            and multiplicative seasonal ARMA.</li>
+      </ul>
+      Prefer <code>exact</code> for pure Gaussian ARMA when comparing to EViews / statsmodels.
+      Keep <code>conditional</code> for non-Gaussian innovations or continuity with GARCH grids.
+    </td>
+  </tr>
+  <tr>
+    <td><code>dist</code></td>
+    <td><code>'normal'|'t'|'skewt'|'ged'</code>, default <code>'normal'</code></td>
+    <td>Innovation distribution. Only <code>normal</code> is allowed with <code>likelihood='exact'</code>.</td>
+  </tr>
+  <tr>
+    <td><code>x</code></td>
+    <td>array / DataFrame, optional</td>
+    <td>Exogenous regressors (ARX / ARMAX). Differenced like <code>y</code> when <code>d</code> or <code>D</code> &gt; 0.
+        Supported under both likelihoods.</td>
+  </tr>
+  <tr>
+    <td><code>cov_type</code></td>
+    <td><code>'opg'|'hessian'|'robust'|'qml'</code>, default <code>'opg'</code></td>
+    <td>Covariance of parameters. <code>exact</code> uses OPG of Kalman observation scores.</td>
+  </tr>
+  <tr>
+    <td><code>center</code></td>
+    <td>bool, default True</td>
+    <td>Demean during optimisation when compatible with <code>trend</code> (conditional path).</td>
+  </tr>
+  <tr>
+    <td><code>adjust_sample</code></td>
+    <td>bool, default True</td>
+    <td>Conditional path: adjust the effective sample to the lag structure (burn-in).</td>
+  </tr>
+  <tr>
+    <td><code>max_iter</code>, <code>tol</code></td>
+    <td>int / float</td>
+    <td>Optimiser limits (BFGS).</td>
+  </tr>
+  </tbody>
+</table>
+
+<h2>Likelihood: conditional vs exact</h2>
+<table>
+  <thead><tr><th></th><th><code>conditional</code></th><th><code>exact</code></th></tr></thead>
+  <tbody>
+  <tr><td>Criterion</td><td>Conditional MLE + burn-in</td><td>Stationary Kalman filter</td></tr>
+  <tr><td>Sample</td><td>Typically n − max(p,q)</td><td>Full n</td></tr>
+  <tr><td>Constant label</td><td>Level-style on centred series</td><td>Unconditional mean (EViews C)</td></tr>
+  <tr><td>Non-Gaussian</td><td>Yes</td><td>No (Gaussian only)</td></tr>
+  <tr><td>Typical match</td><td>ARMA–GARCH mean engine</td><td>EViews ARMA ML, statsmodels ARIMA</td></tr>
+  </tbody>
+</table>
+<pre><code># Airline log-passengers ARMA(1,1) + constant
+res = arma(ylog, ar=1, ma=1, trend="c", likelihood="exact").fit()
+# → LL ≈ 121.70, const ≈ 5.508, AR ≈ 0.963, MA ≈ 0.297 (EViews)
+
+res_c = arma(ylog, ar=1, ma=1, trend="c").fit()  # conditional
+# → LL ≈ 123.92 on 143 obs (not comparable 1:1 to EViews n=144)
+</code></pre>
+
+<h2>Summary diagnostics</h2>
+<p>After <code>fit</code>, <code>summary()</code> prints a statsmodels-style block using
+<strong>standardised</strong> residuals (Kalman innovations under <code>exact</code>):</p>
+<ul>
+  <li>Ljung–Box Q(1) and Prob(Q)</li>
+  <li>Jarque–Bera and Prob(JB)</li>
+  <li>Heteroskedasticity H (break-variance ratio) and Prob(H)</li>
+  <li>Skew and kurtosis</li>
+</ul>
+<p>Methods: <code>test_serial_correlation</code>, <code>test_normality</code>,
+<code>test_heteroskedasticity</code>.</p>
+
+<h2>Forecast standard errors</h2>
+<p>Multi-step prediction intervals use the <strong>exact</strong> MA(∞) ψ-weight formula
+on the working scale, then integrate for <code>d = 1, 2</code> when returning levels
+(replaces <code>σ√h</code>). The SARIMAX path keeps the statsmodels SE.</p>
+<pre><code>fc = res.forecast(steps=8, conf_int=0.95)
+</code></pre>
+
+<h2>Order selection</h2>
+<table>
+  <thead><tr><th>Parameter</th><th>Description</th></tr></thead>
+  <tbody>
+  <tr><td><code>p_range</code>, <code>q_range</code></td><td>Candidate non-seasonal AR/MA orders.</td></tr>
+  <tr><td><code>d</code>, <code>seasonal_order</code></td><td>Fixed for the whole grid.</td></tr>
+  <tr><td><code>criterion</code></td><td><code>'aic'</code>, <code>'bic'</code>, or <code>'hqic'</code>.</td></tr>
+  <tr><td><code>likelihood</code></td><td>
+    Default <code>'conditional'</code> uses a fast GARCH(0,0) grid when non-seasonal.
+    <code>'exact'</code> always runs a manual <code>arma(..., likelihood='exact')</code> grid
+    (full sample, comparable IC).
+  </td></tr>
+  <tr><td><code>return_best</code></td><td>If True, also return a fitted model for the winning order.</td></tr>
+  </tbody>
+</table>
+<pre><code>tab = select_arma_order(y, p_range=range(0, 3), q_range=range(0, 3),
+                        criterion="bic", likelihood="exact")
+from makystats import fit_from_arma_order_table
+second = fit_from_arma_order_table(y, tab, rank=2)  # no re-grid
+</code></pre>
+
+<nav class="page-nav" aria-label="Page">
+  <a class="page-nav-link prev" href="install.html"><span class="page-nav-dir">← Previous</span><span class="page-nav-title">Install</span></a>
+  <a class="page-nav-link next" href="armagarch.html"><span class="page-nav-dir">Next →</span><span class="page-nav-title">ARMA-GARCH</span></a>
+</nav>
+<footer>
+  <p>makystats v0.1.9 · MIT License ·
+    <a href="https://github.com/Lauret-Boris/makystats">GitHub</a> ·
+    <a href="https://pypi.org/project/makystats/">PyPI</a> ·
+    Author: ANDRIANITOVIANA Lauret Boris</p>
+  <p class="muted">Documentation site only — source code lives in the repository and on PyPI, not on these pages.</p>
+</footer>
+    </main>
+  </div>
+</div>
+</body>
+</html>
