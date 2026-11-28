@@ -160,4 +160,10 @@
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
+  <url>
+    <loc>https://lauret-boris.github.io/makystats/validation.html</loc>
+  </url>
+  <url>
+    <loc>https://lauret-boris.github.io/makystats/fr/validation.html</loc>
+  </url>
 </urlset>

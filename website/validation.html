@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Validation · makystats</title>
+  <meta name="description" content="Cross-checks of makystats against statsmodels, EViews conventions, and classical references"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <script src="js/nav.js" defer></script>
+</head>
+<body>
+<header class="topbar">
+  <button type="button" class="menu-btn" id="menu-btn" aria-controls="sidebar" aria-expanded="true" aria-label="Menu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+  <a class="brand" href="index.html">makystats</a>
+  <a class="ext" href="https://github.com/Lauret-Boris/makystats" rel="noopener">GitHub</a>
+  <a class="ext" href="https://pypi.org/project/makystats/" rel="noopener">PyPI</a>
+  <span class="lang"><a href="fr/validation.html">FR</a> · EN</span>
+</header>
+<div class="body-row">
+  <aside class="sidebar" id="sidebar">
+    <a class="nav-item" href="index.html">Home</a>
+    <a class="nav-item" href="install.html">Install</a>
+    <div class="nav-group" id="nav-models">
+      <button type="button" class="nav-group-toggle" id="nav-models-toggle" aria-expanded="true" aria-controls="nav-models-items">
+        <span>Models</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="nav-group-items" id="nav-models-items">
+      <a class="nav-item" href="arma.html">ARMA</a>
+      <a class="nav-item" href="armagarch.html">ARMA-GARCH</a>
+      <a class="nav-item" href="var.html">VAR</a>
+      <a class="nav-item" href="vecm.html">VECM</a>
+      <a class="nav-item" href="ardl.html">ARDL</a>
+      </div>
+    </div>
+    <div class="nav-group" id="nav-tests">
+      <button type="button" class="nav-group-toggle" id="nav-tests-toggle" aria-expanded="true" aria-controls="nav-tests-items">
+        <span>Stationarity</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="nav-group-items" id="nav-tests-items">
+      <a class="nav-item" href="stationarity.html">Overview</a>
+      <a class="nav-item" href="adf.html">ADF</a>
+      <a class="nav-item" href="adf-sequential.html">Sequential ADF</a>
+      <a class="nav-item" href="kpss.html">KPSS</a>
+      <a class="nav-item" href="phillips-perron.html">Phillips–Perron</a>
+      <a class="nav-item" href="dfgls.html">DF-GLS</a>
+      <a class="nav-item" href="zivot-andrews.html">Zivot–Andrews</a>
+      <a class="nav-item" href="engle-granger.html">Engle–Granger</a>
+      </div>
+    </div>
+    <a class="nav-item active" href="validation.html">Validation</a>
+    <a class="nav-item" href="examples.html">Examples</a>
+  </aside>
+  <button type="button" class="sidebar-backdrop" id="sidebar-backdrop" aria-label="Close menu"></button>
+  <div class="scroll">
+    <main class="wrap">
+<h1>Validation</h1>
+<p>
+  Numerical cross-checks of <strong>makystats</strong> against open references
+  (mainly <strong>statsmodels</strong>) and classical software conventions
+  (<strong>EViews</strong>-style likelihoods and information criteria).
+  The goal is transparency for teaching and replication: when numbers match,
+  they should match for a documented reason; when they differ, the scale or
+  likelihood definition is stated explicitly.
+</p>
+<p class="muted">
+  Figures below use fixed simulated series (seed&nbsp;42) so that anyone can
+  reproduce the comparison in a few lines of Python. They are illustrations,
+  not formal certification benchmarks.
+</p>
+
+<h2>Summary by module</h2>
+<table>
+  <thead>
+    <tr><th>Module</th><th>Reference</th><th>Agreement</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>ARMA <code>likelihood='exact'</code></td>
+      <td>statsmodels ARIMA / EViews ARMA ML</td>
+      <td>Coefficients &amp; log-likelihood match</td>
+      <td>Stationary Kalman (Gaussian)</td>
+    </tr>
+    <tr>
+      <td>ARMA <code>likelihood='conditional'</code> (default)</td>
+      <td>EViews conditional ARMA</td>
+      <td>Same spirit; ≠ exact LL</td>
+      <td>Burn-in; needed for non-Gaussian grids</td>
+    </tr>
+    <tr>
+      <td>Unit-root tests (ADF, …)</td>
+      <td>statsmodels / MacKinnon</td>
+      <td>Statistic &amp; p-value align</td>
+      <td>Lag choice may differ under autolag</td>
+    </tr>
+    <tr>
+      <td>Engle–Granger</td>
+      <td>statsmodels <code>coint</code></td>
+      <td>MacKinnon mapping identical</td>
+      <td>Fixed lag → exact match</td>
+    </tr>
+    <tr>
+      <td>VAR system AIC/BIC</td>
+      <td>EViews-style −2ℓ/T</td>
+      <td>Different scale from statsmodels</td>
+      <td><code>summary()</code> also reports log-det AIC</td>
+    </tr>
+    <tr>
+      <td>VECM / Johansen</td>
+      <td>Johansen theory; MHM p-values</td>
+      <td>Trace stats comparable</td>
+      <td>Rank decision uses continuous MHM p-values</td>
+    </tr>
+    <tr>
+      <td>ARMA–GARCH</td>
+      <td>arch / EViews GARCH</td>
+      <td>Same order of magnitude</td>
+      <td>Backcast &amp; constraints can shift LL slightly</td>
+    </tr>
+    <tr>
+      <td>ARDL bounds</td>
+      <td>Pesaran–Shin–Smith; Narayan</td>
+      <td>Critical-value tables embedded</td>
+      <td>Case 1–5 as in the literature</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>1. ARMA(1,1) — exact vs statsmodels</h2>
+<p>
+  Simulated ARMA(1,1) with constant, Gaussian innovations, <code>n=200</code>, seed&nbsp;42.
+  makystats uses <code>likelihood='exact'</code>; statsmodels uses default Gaussian ARIMA.
+</p>
+<table>
+  <thead>
+    <tr><th>Quantity</th><th>makystats exact</th><th>statsmodels ARIMA(1,0,1)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>const</td><td>0.9211</td><td>0.9210</td></tr>
+    <tr><td>AR(1)</td><td>0.4758</td><td>0.4758</td></tr>
+    <tr><td>MA(1)</td><td>0.4041</td><td>0.4040</td></tr>
+    <tr><td>σ²</td><td>0.7634</td><td>0.7634</td></tr>
+    <tr><td>log-likelihood</td><td>−257.182</td><td>−257.182</td></tr>
+  </tbody>
+</table>
+<pre><code>from makystats import ARMA
+from statsmodels.tsa.arima.model import ARIMA
+# y = simulated ARMA(1,1) …
+res = ARMA(p=1, q=1, trend="c", likelihood="exact").fit(y, verbose=False)
+sm  = ARIMA(y, order=(1, 0, 1), trend="c").fit()
+print(res.params, res.llf)
+print(sm.params, sm.llf)</code></pre>
+
+<h2>2. ARMA — conditional likelihood (default)</h2>
+<p>
+  On the same series, the default <code>likelihood='conditional'</code> reports a
+  <em>different</em> log-likelihood (burn-in), closer to EViews’ conditional ARMA
+  than to the exact Kalman likelihood:
+</p>
+<table>
+  <thead>
+    <tr><th>Engine</th><th>log-likelihood</th><th>Role</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>makystats <code>exact</code></td><td>−257.182</td><td>Match statsmodels / EViews ML</td></tr>
+    <tr><td>makystats <code>conditional</code> (default)</td><td>−255.864</td><td>EViews-style conditional; non-Gaussian OK</td></tr>
+  </tbody>
+</table>
+<p>
+  This is intentional. Use <code>likelihood='exact'</code> when you need a side-by-side
+  check with statsmodels; keep the default for GARCH grids and non-Gaussian innovations.
+</p>
+
+<h2>3. ADF statistic</h2>
+<p>
+  Random walk of length 150 (seed continuation). Same regression <code>'c'</code>.
+</p>
+<table>
+  <thead>
+    <tr><th>Quantity</th><th>makystats <code>adf</code></th><th>statsmodels <code>adfuller</code></th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Statistic</td><td>−1.9667</td><td>−1.9667</td></tr>
+    <tr><td>p-value</td><td>0.3014</td><td>0.3014</td></tr>
+    <tr><td>Lags (AIC autolag)</td><td>0</td><td>0</td></tr>
+  </tbody>
+</table>
+<p>
+  With automatic lag selection on other series, the chosen lag may differ
+  slightly from statsmodels; for a fixed lag the MacKinnon mapping of a given
+  statistic is the same. Engle–Granger residual-based tests follow the same
+  principle (see the Engle–Granger page).
+</p>
+
+<h2>4. VAR information criteria — scale difference</h2>
+<p>
+  Bivariate VAR(1) on two windows of the ARMA series. System log-likelihood
+  matches; the published AIC does not, because the formulas differ:
+</p>
+<table>
+  <thead>
+    <tr><th>Quantity</th><th>makystats</th><th>statsmodels</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>System log-likelihood ℓ</td><td>−399.824</td><td>−399.824</td></tr>
+    <tr><td>AIC</td><td>5.447 <span class="muted">(−2ℓ/T + 2k/T)</span></td><td>−0.228 <span class="muted">(log|Σ̂| + 2k/T)</span></td></tr>
+    <tr><td>BIC</td><td>5.568</td><td>−0.107</td></tr>
+  </tbody>
+</table>
+<p>
+  makystats follows an <strong>EViews-style per-observation</strong> AIC.
+  <code>summary()</code> also prints a <strong>log-det</strong> AIC line for comparison
+  with Lütkepohl / statsmodels. Ranking of lag orders is usually unchanged;
+  only the absolute level of the criterion differs.
+</p>
+
+<h2>5. Conventions that are intentional</h2>
+<ul>
+  <li><strong>ARMA–GARCH</strong> — domain repair, Student/GED shape bounds, and backcast choices follow a robust MLE design (EViews-like fixed <code>df=</code> option). Small LL gaps versus the <code>arch</code> package on FIGARCH are documented in the module notes.</li>
+  <li><strong>Johansen rank</strong> — <code>select_coint_rank</code> uses continuous MHM (1999) p-values; critical-value tables remain available via <code>summarize_johansen</code>. Finite-sample rank decisions can disagree with a pure CV rule at 5&nbsp;% — the same trace statistic is shared with statsmodels when specifications match.</li>
+  <li><strong>ARDL</strong> — bounds critical values (Pesaran–Shin–Smith asymptotic; Narayan finite sample) are embedded; case coding follows the textbook 1–5 scheme.</li>
+</ul>
+
+
+<h2>7. ARIMA(1,1,1) — airline log-passengers</h2>
+<p>
+  On <code>log(passengers)</code>, ARIMA(1,1,1) with drift (constant in the
+  differenced equation). makystats (<code>d=1</code>, <code>likelihood='exact'</code>)
+  matches statsmodels (<code>trend='t'</code> after integration — equivalent to a
+  constant on differences):
+</p>
+<table>
+  <thead>
+    <tr><th>Quantity</th><th>makystats exact</th><th>statsmodels</th><th>EViews (screenshot)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>const / C</td><td>0.0098</td><td>0.0098</td><td>0.0100</td></tr>
+    <tr><td>AR(1)</td><td>−0.5826</td><td>−0.5826</td><td>+0.7173</td></tr>
+    <tr><td>MA(1)</td><td>0.8502</td><td>0.8502</td><td>−1.0000</td></tr>
+    <tr><td>σ²</td><td>0.0102</td><td>0.0102</td><td>0.0097</td></tr>
+    <tr><td>log-likelihood</td><td>124.804</td><td>124.804</td><td>127.033</td></tr>
+  </tbody>
+</table>
+<p>
+  The EViews numbers come from a <strong>non-convergent</strong> run (message
+  “Failure to improve objective…”) with the MA root on the boundary
+  (<code>MA(1) = −1</code>, non-invertible). That is not the global MLE: restarting
+  CSS/MLE from that point moves back to the (AR ≈ −0.58, MA ≈ 0.85) region found by
+  makystats and statsmodels. For ARMA (<code>d=0</code>) on log levels, makystats
+  <code>exact</code> and EViews ML agree; the gap here is specific to that failed
+  EViews ARIMA path, not to a model mismatch in makystats.
+</p>
+
+<h2>6. How to re-run checks</h2>
+<pre><code>pip install makystats statsmodels
+python -m pytest tests/ -q -m "not slow"   # package test suite
+# plus the snippets above for ARMA / ADF / VAR</code></pre>
+<p>
+  For teaching packs, prefer <code>likelihood='exact'</code> on pure Gaussian ARMA and
+  the log-det AIC line in VAR <code>summary()</code> when students compare printouts
+  with statsmodels or textbook tables built on |Σ̂|.
+</p>
+
+<p class="muted">Last updated for makystats 0.1.9 · comparisons under Python 3.12 / statsmodels ≥ 0.13</p>
+    </main>
+  </div>
+</div>
+</body>
+</html>
